@@ -4,15 +4,25 @@ import LinearGradient from "react-native-linear-gradient";
 import { globals } from "../Globals";
 import * as React from "react";
 import {
+    Alert,
     Image,
     View,
     Text,
     FlatList,
+    StyleSheet,
     TouchableOpacity
 } from "react-native";
 import axios from "axios";
 
+const styles = StyleSheet.create({
+    default_text: {
+        fontSize: globals.app.width / 20,
+        color: globals.colors.tint
+    }
+})
+
 const HomeScreen = () => {
+    const [showTopButton, setShowTopButton] = React.useState(false);
     const [date, setDate] = React.useState(new Date());
     const [data, setData] = React.useState([]);
 
@@ -72,10 +82,65 @@ const HomeScreen = () => {
         return () => clearInterval(interval);
     }, []);
 
+    const getHourColor = hour => {
+        const dawnColor = "#fddbab";
+        const morningColor = "#a8f0fe";
+        const afternoonColor = "#f58784";
+        const nightColor = "#5d58bc";
+
+        if (hour < 0) hour += 24;
+        if (hour > 23) hour -= 24;
+
+        if (hour < 6) return dawnColor;
+        else if (hour < 12) return morningColor;
+        else if (hour < 18) return afternoonColor;
+        else return nightColor;
+    }
+
+    const getColorPalette = hours => [
+        getHourColor(hours + 2),
+        getHourColor(hours + 1),
+        getHourColor(hours),
+        getHourColor(hours - 1),
+        getHourColor(hours - 2),
+    ]
+
+    const gradientColors = getColorPalette(date.getHours());
+    const FloatButton = ({ onPress, iconName, backgroundColor = globals.colors.foreground }) => {
+        return (
+            <TouchableOpacity
+                onPress={onPress}
+                style={{
+                    marginTop: globals.app.width / 42,
+                    backgroundColor: backgroundColor,
+                    borderRadius: globals.app.circle,
+                    padding: globals.app.width / 40,
+                    justifyContent: "center",
+                    alignItems: "center",
+                    elevation: 10
+                }}>
+                <Icon
+                    size={globals.app.width / 13.2}
+                    color={globals.colors.tint}
+                    name={iconName}
+                />
+            </TouchableOpacity>
+        );
+    }
+
+    const scrollToTop = () => flatlistRef.current.scrollToOffset({ offset: 0, animated: true });
+    const handleScroll = (event) => {
+        const { contentOffset } = event.nativeEvent;
+        setShowTopButton(contentOffset.y > 10);
+    };
+
+    const flatlistRef = React.useRef(null);
     return (
         <View style={{ flex: 1 }}>
             <FlatList
                 data={data}
+                ref={flatlistRef}
+                onScroll={handleScroll}
                 contentContainerStyle={{
                     padding: globals.app.width / 20,
                     flexGrow: 1
@@ -102,24 +167,40 @@ const HomeScreen = () => {
                                     backgroundColor: globals.colors.midground,
                                     borderRadius: globals.app.width / 32,
                                     marginTop: globals.app.width / 30,
-                                    justifyContent: "space-between",
                                     padding: globals.app.width / 42,
                                     flexDirection: "row",
-                                    alignItems: "center"
+                                    alignItems: "center",
+                                    elevation: 6
                                 }}>
-                                <Text
-                                    numberOfLines={1}
-                                    style={{
-                                        fontSize: globals.app.width / 16,
-                                        color: globals.colors.placeholder
-                                    }}>
-                                    {item.category}
-                                </Text>
                                 <Icon
                                     color={globals.colors.placeholder}
-                                    size={globals.app.width / 12}
-                                    name={item.show ? "expand-more" : "expand-less"}
+                                    size={globals.app.width / 18}
+                                    stlye={{ flex: 0 }}
+                                    name="loyalty"
                                 />
+                                <View
+                                    style={{
+                                        marginLeft: globals.app.width / 62,
+                                        justifyContent: "space-between",
+                                        flexDirection: "row",
+                                        alignItems: "center",
+                                        flex: 1
+                                    }}>
+                                    <Text
+                                        numberOfLines={1}
+                                        style={{
+                                            color: globals.colors.placeholder,
+                                            fontSize: globals.app.width / 17.2,
+                                            fontWeight: "600"
+                                        }}>
+                                        {item.category}
+                                    </Text>
+                                    <Icon
+                                        name={item.show ? "expand-more" : "expand-less"}
+                                        color={globals.colors.placeholder}
+                                        size={globals.app.width / 12}
+                                    />
+                                </View>
                             </TouchableOpacity>
                             <FlatList
                                 data={item.items}
@@ -129,22 +210,50 @@ const HomeScreen = () => {
                                         const endTime = `${formatTime(item.endDate.getHours())}:${formatTime(item.endDate.getMinutes())}`;
                                         return (
                                             <TouchableOpacity
+                                                onPress={() => item.icon !== "Holiday" && Alert.alert(
+                                                    item.name,
+                                                    "Abrir evento no formulário."
+                                                )}
+                                                onLongPress={() => item.icon !== "Holiday" && Alert.alert(
+                                                    item.name,
+                                                    "Remover ou alterar este evento?",
+                                                    [
+                                                        { text: "Voltar" },
+                                                        {
+                                                            text: "Alterar",
+                                                            onPress: () => Alert.alert(
+                                                                item.name,
+                                                                "Abrir evento no formulário."
+                                                            )
+                                                        },
+                                                        {
+                                                            text: "Remover",
+                                                            onPress: () => Alert.alert(
+                                                                item.name,
+                                                                "Remover evento dos dados."
+                                                            )
+                                                        }
+                                                    ],
+                                                    { cancelable: true }
+                                                )}
                                                 style={{
                                                     backgroundColor: globals.colors.midground,
                                                     borderRadius: globals.app.width / 32,
                                                     marginTop: globals.app.width / 42,
                                                     padding: globals.app.width / 42,
                                                     flexDirection: "row",
-                                                    alignItems: "center"
+                                                    alignItems: "center",
+                                                    elevation: 2
                                                 }}>
                                                 <View
                                                     style={{
                                                         backgroundColor: globals.colors.foreground,
                                                         borderRadius: globals.app.width / 32,
-                                                        marginRight: globals.app.width / 42,
+                                                        marginRight: globals.app.width / 36,
                                                         borderRadius: globals.app.circle,
-                                                        height: globals.app.width / 6,
-                                                        width: globals.app.width / 6,
+                                                        height: globals.app.width / 6.2,
+                                                        width: globals.app.width / 6.2,
+                                                        elevation: 2
                                                     }}>
                                                     <Image
                                                         source={item.icon === "Holiday" ? require("../assets/Holiday.png") : null}
@@ -159,8 +268,8 @@ const HomeScreen = () => {
                                                     <Text
                                                         numberOfLines={1}
                                                         style={{
-                                                            fontSize: globals.app.width / 22,
-                                                            color: category === data[0].category ? "#7300ff" : category === data[1].category ? "#aa00ff" : "#ff00a2"
+                                                            color: category === data[0].category ? "#7300ff" : category === data[1].category ? "#aa00ff" : "#ff00a2",
+                                                            fontSize: globals.app.width / 22
                                                         }}>
                                                         {item.name}
                                                     </Text>
@@ -168,7 +277,8 @@ const HomeScreen = () => {
                                                         numberOfLines={1}
                                                         style={{
                                                             fontSize: globals.app.width / 28,
-                                                            color: globals.colors.placeholder
+                                                            color: globals.colors.tint,
+
                                                         }}>
                                                         {formatDate(item.startDate, false)}
                                                     </Text>
@@ -183,8 +293,8 @@ const HomeScreen = () => {
                                                     <Text
                                                         style={{
                                                             marginTop: globals.app.width / 22,
-                                                            fontSize: globals.app.width / 26,
                                                             color: globals.colors.placeholder,
+                                                            fontSize: globals.app.width / 26,
                                                             textAlign: "justify"
                                                         }}>
                                                         {item.description.trim().length > 0 ? item.description : "Nenhuma descrição incluída."}
@@ -204,10 +314,11 @@ const HomeScreen = () => {
                             backgroundColor: globals.colors.midground,
                             borderRadius: globals.app.width / 32,
                             padding: globals.app.width / 42,
-                            flexDirection: "row"
+                            flexDirection: "row",
+                            elevation: 10
                         }}>
                         <LinearGradient
-                            colors={globals.colors.gradient}
+                            colors={gradientColors}
                             start={{ x: 0, y: 0 }}
                             end={{ x: 0, y: 1 }}
                             style={{
@@ -225,32 +336,53 @@ const HomeScreen = () => {
                             }}>
                             <Text
                                 numberOfLines={1}
-                                style={{
-                                    fontSize: globals.app.width / 12,
-                                    color: globals.colors.tint
-                                }}>
+                                style={[
+                                    styles.default_text,
+                                    { fontSize: globals.app.width / 12 }
+                                ]}>
                                 {formatTime(date.getHours())}:{formatTime(date.getMinutes())}
                                 <Text
                                     numberOfLines={1}
-                                    style={{
-                                        fontSize: globals.app.width / 20,
-                                        color: globals.colors.tint
-                                    }}>
+                                    style={styles.default_text}>
                                     :{formatTime(date.getSeconds())}
                                 </Text>
                             </Text>
                             <Text
                                 numberOfLines={1}
-                                style={{
-                                    fontSize: globals.app.width / 20,
-                                    color: globals.colors.tint
-                                }}>
+                                style={styles.default_text}>
                                 {formatDate(date)}
                             </Text>
                         </View>
                     </View>
                 )}
             />
+            <View
+                style={{
+                    bottom: globals.app.width / 42,
+                    right: globals.app.width / 42,
+                    position: "absolute"
+                }}>
+                {showTopButton && (
+                    <FloatButton
+                        onPress={scrollToTop}
+                        iconName="arrow-upward"
+                        // backgroundColor="#ff7340"
+                        backgroundColor="#2d84b3"
+                    />
+                )}
+                <FloatButton
+                    onPress={() => alert("remove")}
+                    iconName="delete"
+                    // backgroundColor="#ff9430"
+                    backgroundColor="#2db3aa"
+                />
+                <FloatButton
+                    onPress={() => alert("add")}
+                    iconName="dashboard-customize"
+                    // backgroundColor="#ffb300"
+                    backgroundColor="#2db367"
+                />
+            </View>
         </View>
     )
 };

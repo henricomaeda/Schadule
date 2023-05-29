@@ -28,7 +28,7 @@ export default function App() {
       <Stack.Navigator
         screenOptions={({ navigation, route }) => ({
           headerTitle: globals.app.name,
-          headerTintColor: globals.colors.foreground,
+          headerTintColor: globals.colors.placeholder,
           headerTitleStyle: { fontSize: globals.app.width / 22 },
           headerStyle: { backgroundColor: globals.colors.midground },
           headerLeft: () => route.name !== "HomeScreen" && (
@@ -36,7 +36,7 @@ export default function App() {
               style={{ marginRight: globals.app.width / 22 }}
               onPress={() => navigateToHome(navigation)}>
               <Icon
-                color={globals.colors.foreground}
+                color={globals.colors.placeholder}
                 size={globals.app.width / 18}
                 name="chevron-left"
               />
@@ -45,7 +45,7 @@ export default function App() {
           headerRight: () => route.name === "HomeScreen" && (
             <TouchableOpacity onPress={() => replaceRoute(navigation, route.name)}>
               <Icon
-                color={globals.colors.foreground}
+                color={globals.colors.placeholder}
                 size={globals.app.width / 18}
                 name="cached"
               />
