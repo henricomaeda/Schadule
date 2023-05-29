@@ -1,3 +1,4 @@
+// Import necessary modules and dependencies.
 import { formatTime, formatDate, generateUniqueId } from "../utils/Functions";
 import Icon from "react-native-vector-icons/MaterialIcons";
 import LinearGradient from "react-native-linear-gradient";
@@ -10,24 +11,20 @@ import {
     Text,
     FlatList,
     StyleSheet,
-    TouchableOpacity
+    TouchableOpacity,
+    ActivityIndicator
 } from "react-native";
 import axios from "axios";
-
-const styles = StyleSheet.create({
-    default_text: {
-        fontSize: globals.app.width / 20,
-        color: globals.colors.tint
-    }
-})
 
 const HomeScreen = ({ navigation }) => {
     const [showTopButton, setShowTopButton] = React.useState(false);
     const [selectedItems, setSelectedItems] = React.useState([]);
     const [selectMode, setSelectMode] = React.useState(false);
+    const [loading, setLoading] = React.useState(true);
     const [date, setDate] = React.useState(new Date());
     const [data, setData] = React.useState([]);
 
+    // Get holidays from Brazil's API.
     const fetchHolidays = async () => {
         try {
             const year = date.getFullYear();
@@ -40,6 +37,7 @@ const HomeScreen = ({ navigation }) => {
         }
     };
 
+    // Get all events added by the user and sort it.
     const fetchData = async () => {
         const holidays = await fetchHolidays();
         const data = [];
@@ -76,8 +74,10 @@ const HomeScreen = ({ navigation }) => {
             { category: "Aconteceu", show: false, items: [] },
         ]);
         setData(transformedData);
+        setLoading(false);
     };
 
+    // Define a constructor to update the time in real-time and retrieve data.
     React.useEffect(() => {
         const unsubscribe = navigation.addListener('focus', fetchData);
         const interval = setInterval(() => setDate(new Date()), 1000);
@@ -87,6 +87,7 @@ const HomeScreen = ({ navigation }) => {
         };
     }, []);
 
+    // Returns the color based on the hour.
     const getHourColor = hour => {
         const dawnColor = "#fddbab";
         const morningColor = "#a8f0fe";
@@ -100,17 +101,21 @@ const HomeScreen = ({ navigation }) => {
         else if (hour < 12) return morningColor;
         else if (hour < 18) return afternoonColor;
         else return nightColor;
-    }
+    };
 
+    // Returns an array of colors based on the given hours.
     const getColorPalette = hours => [
         getHourColor(hours + 2),
         getHourColor(hours + 1),
         getHourColor(hours),
         getHourColor(hours - 1),
         getHourColor(hours - 2),
-    ]
+    ];
 
+    // Define a gradient of colors based on the current hour.
     const gradientColors = getColorPalette(date.getHours());
+
+    // Define a floating button with customizable properties.
     const FloatButton = ({ iconName, backgroundColor = globals.colors.foreground, onPress = null }) => {
         return (
             <TouchableOpacity
@@ -131,14 +136,16 @@ const HomeScreen = ({ navigation }) => {
                 />
             </TouchableOpacity>
         );
-    }
+    };
 
+    // Scrolls the flatlist to the top and determines whether to show the top button.
     const scrollToTop = () => flatlistRef.current.scrollToOffset({ offset: 0, animated: true });
     const handleScroll = (event) => {
         const { contentOffset } = event.nativeEvent;
         setShowTopButton(contentOffset.y >= 20);
     };
 
+    // Define a reference to the flatlist.
     const flatlistRef = React.useRef(null);
     return (
         <View style={{ flex: 1 }}>
@@ -150,6 +157,53 @@ const HomeScreen = ({ navigation }) => {
                     padding: globals.app.width / 20,
                     flexGrow: 1
                 }}
+                ListHeaderComponent={() => (
+                    <View
+                        style={{
+                            backgroundColor: globals.colors.midground,
+                            borderRadius: globals.app.width / 32,
+                            padding: globals.app.width / 42,
+                            flexDirection: "row",
+                            elevation: 10
+                        }}>
+                        <LinearGradient
+                            colors={gradientColors}
+                            start={{ x: 0, y: 0 }}
+                            end={{ x: 0, y: 1 }}
+                            style={{
+                                borderRadius: globals.app.width / 32,
+                                padding: globals.app.width / 42,
+                                flex: 0
+                            }}
+                        />
+                        <View
+                            style={{
+                                padding: globals.app.width / 42,
+                                justifyContent: "center",
+                                alignItems: "center",
+                                flex: 1
+                            }}>
+                            <Text
+                                numberOfLines={1}
+                                style={[
+                                    styles.default_text,
+                                    { fontSize: globals.app.width / 12 }
+                                ]}>
+                                {formatTime(date.getHours())}:{formatTime(date.getMinutes())}
+                                <Text
+                                    numberOfLines={1}
+                                    style={styles.default_text}>
+                                    :{formatTime(date.getSeconds())}
+                                </Text>
+                            </Text>
+                            <Text
+                                numberOfLines={1}
+                                style={styles.default_text}>
+                                {formatDate(date)}
+                            </Text>
+                        </View>
+                    </View>
+                )}
                 renderItem={({ item }) => {
                     const showItems = item.show;
                     const category = item.category;
@@ -224,11 +278,13 @@ const HomeScreen = ({ navigation }) => {
                                         return (
                                             <TouchableOpacity
                                                 onPress={() => {
-                                                    if (selectMode) handleSelect();
-                                                    else if (item.icon !== "Holiday") Alert.alert(
-                                                        item.name,
-                                                        "Abrir evento no formulário."
-                                                    )
+                                                    if (item.icon !== "Holiday") {
+                                                        if (selectMode) handleSelect();
+                                                        else if (item.icon !== "Holiday") Alert.alert(
+                                                            item.name,
+                                                            "Abrir evento no formulário."
+                                                        )
+                                                    }
                                                 }}
                                                 onLongPress={() => {
                                                     if (!selectMode && item.icon !== "Holiday") Alert.alert(
@@ -255,7 +311,7 @@ const HomeScreen = ({ navigation }) => {
                                                     )
                                                 }}
                                                 style={{ flexDirection: "row", flex: 1 }}>
-                                                {selectMode && (
+                                                {selectMode && item.icon !== "Holiday" && (
                                                     <View
                                                         style={{
                                                             marginRight: globals.app.width / 42,
@@ -350,53 +406,22 @@ const HomeScreen = ({ navigation }) => {
                         </View>
                     );
                 }}
-                ListHeaderComponent={() => (
-                    <View
-                        style={{
-                            backgroundColor: globals.colors.midground,
-                            borderRadius: globals.app.width / 32,
-                            padding: globals.app.width / 42,
-                            flexDirection: "row",
-                            elevation: 10
-                        }}>
-                        <LinearGradient
-                            colors={gradientColors}
-                            start={{ x: 0, y: 0 }}
-                            end={{ x: 0, y: 1 }}
-                            style={{
-                                borderRadius: globals.app.width / 32,
-                                padding: globals.app.width / 42,
-                                flex: 0
-                            }}
-                        />
+                ListFooterComponent={() => {
+                    if (loading) return (
                         <View
                             style={{
-                                padding: globals.app.width / 42,
+                                marginTop: globals.app.width / 30,
                                 justifyContent: "center",
                                 alignItems: "center",
                                 flex: 1
                             }}>
-                            <Text
-                                numberOfLines={1}
-                                style={[
-                                    styles.default_text,
-                                    { fontSize: globals.app.width / 12 }
-                                ]}>
-                                {formatTime(date.getHours())}:{formatTime(date.getMinutes())}
-                                <Text
-                                    numberOfLines={1}
-                                    style={styles.default_text}>
-                                    :{formatTime(date.getSeconds())}
-                                </Text>
-                            </Text>
-                            <Text
-                                numberOfLines={1}
-                                style={styles.default_text}>
-                                {formatDate(date)}
-                            </Text>
+                            <ActivityIndicator
+                                color={globals.colors.foreground}
+                                size="large"
+                            />
                         </View>
-                    </View>
-                )}
+                    );
+                }}
             />
             <View
                 style={{
@@ -462,4 +487,11 @@ const HomeScreen = ({ navigation }) => {
     )
 };
 
+// Export the component and define default styles for it.
 export default HomeScreen;
+const styles = StyleSheet.create({
+    default_text: {
+        fontSize: globals.app.width / 20,
+        color: globals.colors.tint
+    }
+})
