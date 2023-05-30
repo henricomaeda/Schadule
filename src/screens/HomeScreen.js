@@ -309,17 +309,22 @@ const HomeScreen = ({ navigation }) => {
                                                     }}>
                                                     <View
                                                         style={{
-                                                            backgroundColor: globals.colors.foreground,
+                                                            borderColor: category === data[0].category ? "#7300ff" : category === data[1].category ? "#aa00ff" : "#ff00a2",
                                                             borderRadius: globals.app.width / 32,
+                                                            borderWidth: globals.app.width / 200,
                                                             marginRight: globals.app.width / 36,
                                                             borderRadius: globals.app.circle,
-                                                            height: globals.app.width / 6.2,
-                                                            width: globals.app.width / 6.2,
+                                                            borderStyle: "dotted",
                                                             elevation: 2
                                                         }}>
                                                         <Image
                                                             source={item.icon === "Holiday" ? require("../assets/Holiday.png") : null}
-                                                            style={{ height: "100%", width: "100%" }}
+                                                            style={{
+                                                                borderRadius: globals.app.circle,
+                                                                height: globals.app.width / 6.2,
+                                                                margin: globals.app.width / 106,
+                                                                width: globals.app.width / 6.2
+                                                            }}
                                                         />
                                                     </View>
                                                     <View
