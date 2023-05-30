@@ -1,19 +1,22 @@
-# ChromoCal
+# Schadule
 
 ## Overview
-A sleek calendar app that dynamically adjusts its color scheme based on the time of day. Stay organized while enjoying visually stunning transitions from cool tones in the morning to warm hues in the evening.
+Schadule is a sleek and intuitive mobile app built using React Native. With its dark-mode interface, it offers a visually appealing schedule experience. Real-time updated time display, vibrant colors for events, and a user-friendly form make organizing tasks effortless. Leveraging an API, it provides national holidays, allowing users to plan around them seamlessly. The app's intelligent sorting feature enables efficient management of events, ensuring a well-organized schedule.
 
 ## Installation
-	git clone https://github.com/henricomaeda/ChromoCal.git
+	git clone https://github.com/henricomaeda/Schadule.git
 
 ## Install dependencies
-	cd ChromoCal && npm install
+	cd Schadule && npm install
 
 ## Start the application
 	npx react-native run-android
+
+## API used
+- [Brasil API](https://brasilapi.com.br/docs) for national holidays.
 
 ## Designer Icon Attribution
 All icons used in the application was designed by [Freepik - Flaticon](https://www.flaticon.com/authors/freepik).
 
 ## APK Download
-To download the latest version of ChromoCal, simply head to the **release** folder of this repository and retrieve the APK file from there.
+To download the latest version of Schadule, simply head to the **release** folder of this repository and retrieve the APK file from there.
