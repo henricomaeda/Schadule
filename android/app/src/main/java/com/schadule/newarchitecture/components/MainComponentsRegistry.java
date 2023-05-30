@@ -1,4 +1,4 @@
-package com.chromocal.newarchitecture.components;
+package com.schadule.newarchitecture.components;
 
 import com.facebook.jni.HybridData;
 import com.facebook.proguard.annotations.DoNotStrip;

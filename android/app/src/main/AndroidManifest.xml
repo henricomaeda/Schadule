@@ -1,5 +1,5 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-  package="com.chromocal">
+  package="com.schadule">
 
     <uses-permission android:name="android.permission.INTERNET" />
 

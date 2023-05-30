@@ -1,14 +1,14 @@
 /**
- * ChromoCal Mobile App
+ * Schadule Mobile App
  *
- * Entry point for the ChromoCal mobile application. It registers the main
+ * Entry point for the Schadule mobile application. It registers the main
  * component with the React Native AppRegistry for navigation purposes.
  *
  * @format
  * @flow
- * @providesModule ChromoCal
+ * @providesModule Schadule
  * @flow strict-local
- * @module ChromoCal
+ * @module Schadule
  */
 
 // Import the application's name and main component.

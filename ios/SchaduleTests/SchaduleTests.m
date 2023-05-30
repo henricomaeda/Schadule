@@ -7,11 +7,11 @@
 #define TIMEOUT_SECONDS 600
 #define TEXT_TO_LOOK_FOR @"Welcome to React"
 
-@interface ChromoCalTests : XCTestCase
+@interface SchaduleTests : XCTestCase
 
 @end
 
-@implementation ChromoCalTests
+@implementation SchaduleTests
 
 - (BOOL)findSubviewInView:(UIView *)view matching:(BOOL (^)(UIView *view))test
 {
