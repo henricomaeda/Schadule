@@ -2,6 +2,7 @@
 import { formatTime, formatDate, generateUniqueId } from "../utils/Functions";
 import Icon from "react-native-vector-icons/MaterialIcons";
 import LinearGradient from "react-native-linear-gradient";
+import RoundButton from "../components/RoundButton";
 import { globals } from "../Globals";
 import * as React from "react";
 import {
@@ -14,7 +15,8 @@ import {
     TouchableOpacity,
     ActivityIndicator
 } from "react-native";
-import axios from "axios";
+import fetchHolidays from "../services/HolidayService";
+import { navigateToScreen } from "../utils/Navigation";
 
 const HomeScreen = ({ navigation }) => {
     const [showTopButton, setShowTopButton] = React.useState(false);
@@ -24,20 +26,7 @@ const HomeScreen = ({ navigation }) => {
     const [date, setDate] = React.useState(new Date());
     const [data, setData] = React.useState([]);
 
-    // Get holidays from Brazil's API.
-    const fetchHolidays = async () => {
-        try {
-            const year = date.getFullYear();
-            const response = await axios.get(`https://brasilapi.com.br/api/feriados/v1/${year}`);
-            return response.data;
-        }
-        catch (error) {
-            console.error('Error occurred while fetching holidays:', error);
-            return [];
-        }
-    };
-
-    // Get all events added by the user and sort it.
+    // Fetches data by retrieving holidays and transforming it.
     const fetchData = async () => {
         const holidays = await fetchHolidays();
         const data = [];
@@ -51,7 +40,7 @@ const HomeScreen = ({ navigation }) => {
             else return new Date(year, month, day, 23, 59, 59);
         }
 
-        holidays.map((item, index) => {
+        holidays.map((item) => {
             data.push({
                 id: generateUniqueId(data),
                 name: item.name,
@@ -82,25 +71,24 @@ const HomeScreen = ({ navigation }) => {
         const unsubscribe = navigation.addListener('focus', fetchData);
         const interval = setInterval(() => setDate(new Date()), 1000);
         return () => {
-            clearInterval(interval);
             unsubscribe;
+            setLoading(true);
+            clearInterval(interval);
         };
     }, []);
 
     // Returns the color based on the hour.
     const getHourColor = hour => {
-        const dawnColor = "#fddbab";
-        const morningColor = "#a8f0fe";
-        const afternoonColor = "#f58784";
-        const nightColor = "#5d58bc";
-
         if (hour < 0) hour += 24;
         if (hour > 23) hour -= 24;
 
-        if (hour < 6) return dawnColor;
-        else if (hour < 12) return morningColor;
-        else if (hour < 18) return afternoonColor;
-        else return nightColor;
+        if (hour == 0) return "#899aa1";
+        else if (hour < 5) return "#6a6c7a";
+        else if (hour < 10) return "#faf5c8";
+        else if (hour < 13) return "#fad889";
+        else if (hour < 17) return "#fbbe9a";
+        else if (hour < 20) return "#bda2a2";
+        else return "#899aa1"
     };
 
     // Returns an array of colors based on the given hours.
@@ -109,34 +97,11 @@ const HomeScreen = ({ navigation }) => {
         getHourColor(hours + 1),
         getHourColor(hours),
         getHourColor(hours - 1),
-        getHourColor(hours - 2),
+        getHourColor(hours - 2)
     ];
 
     // Define a gradient of colors based on the current hour.
     const gradientColors = getColorPalette(date.getHours());
-
-    // Define a floating button with customizable properties.
-    const FloatButton = ({ iconName, backgroundColor = globals.colors.foreground, onPress = null }) => {
-        return (
-            <TouchableOpacity
-                onPress={onPress}
-                style={{
-                    marginTop: globals.app.width / 42,
-                    backgroundColor: backgroundColor,
-                    borderRadius: globals.app.circle,
-                    padding: globals.app.width / 40,
-                    justifyContent: "center",
-                    alignItems: "center",
-                    elevation: 10
-                }}>
-                <Icon
-                    size={globals.app.width / 13.2}
-                    color={globals.colors.tint}
-                    name={iconName}
-                />
-            </TouchableOpacity>
-        );
-    };
 
     // Scrolls the flatlist to the top and determines whether to show the top button.
     const scrollToTop = () => flatlistRef.current.scrollToOffset({ offset: 0, animated: true });
@@ -430,64 +395,52 @@ const HomeScreen = ({ navigation }) => {
                     position: "absolute"
                 }}>
                 {showTopButton && (
-                    <FloatButton
+                    <RoundButton
                         iconName="arrow-upward"
                         backgroundColor="#2d84b3"
                         onPress={scrollToTop}
                     />
                 )}
-                {selectMode ? (
-                    <>
-                        <FloatButton
-                            iconName="close"
-                            backgroundColor="#2db3aa"
-                            onPress={() => {
-                                setSelectMode(false);
-                                setSelectedItems([]);
-                            }}
-                        />
-                        <FloatButton
-                            iconName="check"
-                            backgroundColor="#2db367"
-                            onPress={() => {
-                                if (selectedItems.length > 0) {
-                                    Alert.alert(
-                                        "Remover selecionados",
-                                        "Você tem certeza disso?",
-                                        [
-                                            { text: "Cancelar" },
-                                            {
-                                                text: "Confirmar",
-                                                onPress: () => Alert.alert("Remover selecionados", "Removendo selecionados...")
-                                            }
-                                        ],
-                                        { cancelable: true }
-                                    )
-                                }
-                                else setSelectMode(false);
-                            }}
-                        />
-                    </>
-                ) : (
-                    <>
-                        <FloatButton
-                            iconName="delete"
-                            backgroundColor="#2db3aa"
-                            onPress={() => setSelectMode(true)}
-                        />
-                        <FloatButton
-                            iconName="dashboard-customize"
-                            backgroundColor="#2db367"
-                            onPress={() => Alert.alert(globals.app.name, "Abrir novo formulário.")}
-                        />
-                    </>
-                )}
+                <RoundButton
+                    iconName={selectMode ? "close" : "delete"}
+                    backgroundColor="#2db3aa"
+                    onPress={() => {
+                        if (selectMode) {
+                            setSelectMode(false);
+                            setSelectedItems([]);
+                        }
+                        else setSelectMode(true);
+                    }}
+                />
+                <RoundButton
+                    iconName={selectMode ? "check" : "dashboard-customize"}
+                    backgroundColor="#2db367"
+                    onPress={() => {
+                        if (selectMode) {
+                            if (selectedItems.length > 0) {
+                                Alert.alert(
+                                    "Remover selecionados",
+                                    "Você tem certeza disso?",
+                                    [
+                                        { text: "Cancelar" },
+                                        {
+                                            text: "Confirmar",
+                                            onPress: () => Alert.alert("Remover selecionados", "Removendo selecionados...")
+                                        }
+                                    ],
+                                    { cancelable: true }
+                                )
+                            }
+                            else setSelectMode(false);
+                        }
+                        else navigateToScreen(navigation, "FormScreen");
+                    }}
+                />
             </View>
         </View >
     )
 };
 
-// Export the component and define default styles for it.
 export default HomeScreen;
 const styles = StyleSheet.create({
     default_text: {
