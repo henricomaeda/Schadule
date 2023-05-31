@@ -1,18 +1,22 @@
+
+import { formatTime, formatDate, generateUniqueId } from "../utils/Functions";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import Icon from "react-native-vector-icons/MaterialIcons";
 import DropDownPicker from "react-native-dropdown-picker";
-import { formatTime } from "../utils/Functions";
+import { getData, storeData } from "../utils/DataStorage";
+import { navigateToHome } from "../utils/Navigation";
+import RoundButton from "../components/RoundButton";
 import { globals } from "../Globals";
 import * as React from "react";
 import {
     ScrollView,
     StyleSheet,
+    Image,
     View,
     Text,
     TextInput,
     TouchableOpacity,
 } from "react-native";
-import RoundButton from "../components/RoundButton";
 
 const FormScreen = ({ navigation, route }) => {
     const [id, setId] = React.useState(route.params ? JSON.parse(route.params).id : -1);
@@ -26,6 +30,30 @@ const FormScreen = ({ navigation, route }) => {
     const [description, setDescription] = React.useState("");
     const [required, setRequired] = React.useState(false);
     const [showTopButton, setShowTopButton] = React.useState(false);
+    const [events, setEvents] = React.useState([]);
+
+    // Define an constructor to fetch data.
+    React.useEffect(() => {
+        const fetchData = async () => {
+            const events = await getData("events", true);
+            if (events && events.length > 0) {
+                setEvents(events);
+                if (id !== -1) {
+                    const event = events.find(item => item.id === id);
+                    setName(event.name);
+                    setAddress(event.address);
+                    setStartDate(new Date(event.startDate));
+                    setEndDate(new Date(event.endDate));
+                    setAnnually(Boolean(event.annually));
+                    setAllDay(Boolean(event.allDay));
+                    setCategory(event.category);
+                    setDescription(event.description);
+                }
+            }
+        }
+
+        fetchData();
+    }, [id]);
 
     const [open, setOpen] = React.useState(false);
     const [categories, setCategories] = React.useState([
@@ -34,7 +62,7 @@ const FormScreen = ({ navigation, route }) => {
         { label: "Trabalho", value: "Business" },
         { label: "Acadêmico", value: "Academic" },
         { label: "Relacionamento", value: "Relationship" },
-        { label: "Medicina", value: "Medicine" },
+        { label: "Medicina", value: "Medicine" }
     ]);
 
     const [showDatePicker, setShowDatePicker] = React.useState(false);
@@ -72,9 +100,10 @@ const FormScreen = ({ navigation, route }) => {
             <TextInput
                 value={value}
                 multiline={multiline}
-                numberOfLines={multiline ? 6 : 1}
                 onChangeText={setValue}
+                numberOfLines={multiline ? 6 : 1}
                 onBlur={() => onBlurInput(setValue)}
+                onFocus={() => inputRequired && setRequired(false)}
                 placeholderTextColor={globals.colors.placeholder}
                 placeholder={placeholder}
                 style={{
@@ -92,6 +121,7 @@ const FormScreen = ({ navigation, route }) => {
                     style={[
                         styles.label,
                         {
+                            fontSize: globals.app.width / 24.2,
                             marginTop: globals.app.width / 92,
                             color: "#eb1c57"
                         }
@@ -164,6 +194,38 @@ const FormScreen = ({ navigation, route }) => {
 
     // Define a reference to the flatlist.
     const scrollViewRef = React.useRef(null);
+    const saveEvent = () => {
+        try {
+            if (id === -1) events.push({
+                id: generateUniqueId(events),
+                name: name.trim(),
+                address: address.trim(),
+                startDate: startDate,
+                endDate: endDate,
+                annually: annually,
+                allDay: allDay,
+                category: category.trim(),
+                description: description.trim()
+            });
+            else {
+                const eventIndex = events.findIndex(event => event.id === id);
+                events[eventIndex].name = name.trim();
+                events[eventIndex].address = address.trim();
+                events[eventIndex].startDate = startDate;
+                events[eventIndex].endDate = endDate;
+                events[eventIndex].annually = annually;
+                events[eventIndex].allDay = allDay;
+                events[eventIndex].category = category.trim();
+                events[eventIndex].description = description.trim();
+            };
+
+            storeData("events", events, true);
+            navigateToHome(navigation);
+        }
+        catch (error) {
+            console.error("Error while saving data:", error);
+        }
+    }
 
     const onBlurInput = setValue => setValue(previousValue => previousValue.trim());
     return (
@@ -173,9 +235,8 @@ const FormScreen = ({ navigation, route }) => {
                 onScroll={handleScroll}
                 removeClippedSubviews={false}
                 keyboardShouldPersistTaps="handled"
-                contentContainerStyle={{ flexGrow: 1 }}
-                style={{ padding: globals.app.width / 26 }}>
-                <View style={{ flex: 1 }}>
+                contentContainerStyle={{ flexGrow: 1 }}>
+                <View style={{ flex: 1, margin: globals.app.width / 26 }}>
                     {showDatePicker && (
                         <DateTimePicker
                             mode="date"
@@ -199,6 +260,111 @@ const FormScreen = ({ navigation, route }) => {
                             onChange={(event, date) => handleTimeChange(date, false)}
                         />
                     )}
+                    <Text
+                        numberOfLines={1}
+                        style={styles.label}>
+                        Pré-visualização
+                    </Text>
+                    <View
+                        style={{
+                            backgroundColor: globals.colors.midground,
+                            marginBottom: globals.app.width / 26,
+                            borderRadius: globals.app.width / 32,
+                            padding: globals.app.width / 42,
+                            justifyContent: "center",
+                            alignItems: "center",
+                            elevation: 6,
+                            flex: 1
+                        }}>
+                        <View style={{ flexDirection: "row", flex: 1 }}>
+                            <View
+                                style={{
+                                    borderRadius: globals.app.width / 32,
+                                    borderWidth: globals.app.width / 200,
+                                    marginRight: globals.app.width / 36,
+                                    borderRadius: globals.app.circle,
+                                    justifyContent: "center",
+                                    borderColor: "#2db3a8",
+                                    borderStyle: "dotted",
+                                    alignItems: "center",
+                                    elevation: 2,
+                                    flex: 0
+                                }}>
+                                <Image
+                                    source={
+                                        category === "Academic" ? require("../assets/Academic.png") :
+                                            category === "Birthday" ? require("../assets/Birthday.png") :
+                                                category === "Business" ? require("../assets/Business.png") :
+                                                    category === "Medicine" ? require("../assets/Medicine.png") :
+                                                        category === "Relationship" ? require("../assets/Relationship.png") :
+                                                            require("../assets/Reminder.png")
+                                    }
+                                    style={{
+                                        borderRadius: globals.app.circle,
+                                        height: globals.app.width / 7.2,
+                                        margin: globals.app.width / 106,
+                                        width: globals.app.width / 7.2
+                                    }}
+                                />
+                            </View>
+                            <View
+                                style={{
+                                    justifyContent: "center",
+                                    flex: 1
+                                }}>
+                                <Text
+                                    numberOfLines={1}
+                                    style={{
+                                        fontSize: globals.app.width / 22,
+                                        color: "#2db3a8"
+                                    }}>
+                                    {name.trim().length > 0 ? name.trim() : "Nome do evento"}
+                                </Text>
+                                <Text
+                                    numberOfLines={1}
+                                    style={{
+                                        fontSize: globals.app.width / 28,
+                                        color: globals.colors.tint,
+
+                                    }}>
+                                    {formatDate(startDate, false)}
+                                </Text>
+                                <Text
+                                    numberOfLines={1}
+                                    style={{
+                                        fontSize: globals.app.width / 28,
+                                        color: globals.colors.placeholder
+                                    }}>
+                                    {`${formatTime(startDate.getHours())}:${formatTime(startDate.getMinutes())} - ${formatTime(endDate.getHours())}:${formatTime(endDate.getMinutes())}`}
+                                </Text>
+                            </View>
+                        </View>
+                        <View
+                            style={{
+                                marginTop: globals.app.width / 42,
+                                alignSelf: "flex-start",
+                                width: "100%"
+                            }}>
+                            <Text
+                                numberOfLines={1}
+                                style={{
+                                    fontSize: globals.app.width / 26.72,
+                                    color: globals.colors.foreground,
+                                    flex: 1
+                                }}>
+                                {address.trim().length > 0 ? address.trim() : "Local do evento"}
+                            </Text>
+                            <Text
+                                numberOfLines={3}
+                                style={{
+                                    color: globals.colors.placeholder,
+                                    fontSize: globals.app.width / 28,
+                                    textAlign: "justify"
+                                }}>
+                                {description.trim().length > 0 ? description.trim() : "Descrição do evento"}
+                            </Text>
+                        </View>
+                    </View>
                     {CustomTextInput(name, setName, "Nome do evento", "Entre com o nome do evento", false, true)}
                     {CustomTextInput(address, setAddress, "Local do evento", "Entre com a localidade do evento")}
                     <View
@@ -343,8 +509,7 @@ const FormScreen = ({ navigation, route }) => {
                         }
                         else {
                             setRequired(false);
-                            if (id === -1) alert("Adicionar evento.");
-                            else alert("Atualizar evento.");
+                            saveEvent();
                         }
                     }}
                 />
