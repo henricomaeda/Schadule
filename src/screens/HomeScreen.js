@@ -1,11 +1,16 @@
 // Import necessary modules and dependencies.
 import { formatTime, formatDate, generateUniqueId } from "../utils/Functions";
+import { getData, removeData, storeData } from "../utils/DataStorage";
+import { navigateToScreen, replaceRoute } from "../utils/Navigation";
 import Icon from "react-native-vector-icons/MaterialIcons";
 import LinearGradient from "react-native-linear-gradient";
+import fetchHolidays from "../services/HolidayService";
 import RoundButton from "../components/RoundButton";
 import { globals } from "../Globals";
 import * as React from "react";
 import {
+    BackHandler,
+    Clipboard,
     Alert,
     Image,
     View,
@@ -15,10 +20,8 @@ import {
     TouchableOpacity,
     ActivityIndicator
 } from "react-native";
-import fetchHolidays from "../services/HolidayService";
-import { navigateToScreen } from "../utils/Navigation";
 
-const HomeScreen = ({ navigation }) => {
+const HomeScreen = ({ isMenuOpen, setIsMenuOpen, navigation }) => {
     const [showTopButton, setShowTopButton] = React.useState(false);
     const [selectedItems, setSelectedItems] = React.useState([]);
     const [selectMode, setSelectMode] = React.useState(false);
@@ -31,6 +34,31 @@ const HomeScreen = ({ navigation }) => {
         const holidays = await fetchHolidays();
         const data = [];
 
+        const events = await getData('events', true);
+        const increaseYear = date => {
+            const newDate = new Date(date);
+            newDate.setFullYear(newDate.getFullYear() + 1);
+            return newDate;
+        };
+
+        if (events && events.length > 0) events.forEach(item => {
+            const newItem = {
+                ...item,
+                id: parseInt(item.id),
+                startDate: new Date(item.startDate),
+                endDate: new Date(item.endDate),
+                annually: Boolean(item.annually),
+                allDay: Boolean(item.allDay)
+            };
+
+            if (newItem.annually && newItem.endDate < date) {
+                newItem.startDate = increaseYear(newItem.startDate);
+                newItem.endDate = increaseYear(newItem.endDate);
+            }
+
+            data.push(newItem);
+        });
+
         const formatDate = (date, start = true) => {
             const newDate = new Date(date);
             const day = newDate.getDate();
@@ -40,18 +68,25 @@ const HomeScreen = ({ navigation }) => {
             else return new Date(year, month, day, 23, 59, 59);
         }
 
-        holidays.map((item) => {
-            data.push({
+        holidays.forEach(item => {
+            const newItem = {
                 id: generateUniqueId(data),
                 name: item.name,
-                icon: "Holiday",
-                description: "Feriado nacional.",
+                address: "",
                 startDate: formatDate(item.date),
-                endDate: formatDate(item.date, false)
-            })
+                endDate: formatDate(item.date, false),
+                annually: false,
+                allDay: true,
+                category: "Holiday",
+                description: "Feriado nacional."
+            };
+
+            const future = newItem.startDate >= date;
+            const present = newItem.endDate >= date;
+            if (future || present) data.push(newItem);
         });
 
-        const sortedData = [...data].sort((a, b) => a.date - b.date);
+        const sortedData = [...data].sort((a, b) => a.startDate - b.startDate);
         const transformedData = sortedData.reduce((result, item) => {
             if (item.startDate <= date && date <= item.endDate) result[0].items.push(item);
             else if (item.startDate > date) result[1].items.push(item);
@@ -66,16 +101,32 @@ const HomeScreen = ({ navigation }) => {
         setLoading(false);
     };
 
+    // Define a function to handle when user press the return button.
+    const handleBackPress = () => {
+        if (selectMode) {
+            setSelectMode(false);
+            setSelectedItems([]);
+            return true;
+        }
+        else if (isMenuOpen) {
+            setIsMenuOpen(false);
+            return true;
+        }
+        return false;
+    };
+
     // Define a constructor to update the time in real-time and retrieve data.
     React.useEffect(() => {
+        const unsubscribeBackPress = BackHandler.addEventListener('hardwareBackPress', handleBackPress);
         const unsubscribe = navigation.addListener('focus', fetchData);
         const interval = setInterval(() => setDate(new Date()), 1000);
         return () => {
-            unsubscribe;
             setLoading(true);
             clearInterval(interval);
+            unsubscribeBackPress.remove();
+            unsubscribe;
         };
-    }, []);
+    }, [isMenuOpen, selectMode]);
 
     // Returns the color based on the hour.
     const getHourColor = hour => {
@@ -110,10 +161,56 @@ const HomeScreen = ({ navigation }) => {
         setShowTopButton(contentOffset.y >= 20);
     };
 
+    const OptionLabel = ({ name, screen = "" }) => (
+        <TouchableOpacity
+            onPress={() => screen.trim().length !== 0 && navigateToScreen(navigation, screen)}
+            style={{
+                paddingHorizontal: globals.app.width / 40,
+                paddingVertical: globals.app.width / 36
+            }}>
+            <Text
+                style={{
+                    fontSize: globals.app.width / 22,
+                }}>
+                {name}
+            </Text>
+        </TouchableOpacity>
+    )
+
     // Define a reference to the flatlist.
     const flatlistRef = React.useRef(null);
     return (
         <View style={{ flex: 1 }}>
+            {isMenuOpen && (
+                <>
+                    <View
+                        onTouchEnd={() => setIsMenuOpen(false)}
+                        style={{
+                            borderBottomLeftRadius: globals.app.width / 20,
+                            backgroundColor: globals.colors.foreground,
+                            minWidth: globals.app.width / 2.2,
+                            position: "absolute",
+                            elevation: 10,
+                            zIndex: 10,
+                            right: 0,
+                            top: 0
+                        }}>
+                        <OptionLabel name="Novo evento" screen="FormScreen" />
+                        <OptionLabel name="Backup" screen="DataScreen" />
+                        <OptionLabel name="Sobre" screen="DetailsScreen" />
+                    </View>
+                    <TouchableOpacity
+                        activeOpacity={1}
+                        onPress={() => setIsMenuOpen(false)}
+                        style={{
+                            position: "absolute",
+                            height: "100%",
+                            width: "100%",
+                            zIndex: 6
+                        }}
+                    />
+                </>
+            )}
             <FlatList
                 data={data}
                 ref={flatlistRef}
@@ -243,40 +340,40 @@ const HomeScreen = ({ navigation }) => {
                                         return (
                                             <TouchableOpacity
                                                 onPress={() => {
-                                                    if (item.icon !== "Holiday") {
+                                                    if (item.category !== "Holiday") {
                                                         if (selectMode) handleSelect();
-                                                        else if (item.icon !== "Holiday") Alert.alert(
-                                                            item.name,
-                                                            "Abrir evento no formulário."
-                                                        )
+                                                        else if (item.category !== "Holiday") navigateToScreen(navigation, "FormScreen", { id: item.id });
                                                     }
                                                 }}
-                                                onLongPress={() => {
-                                                    if (!selectMode && item.icon !== "Holiday") Alert.alert(
-                                                        item.name,
-                                                        "Remover ou alterar este evento?",
-                                                        [
-                                                            { text: "Voltar" },
-                                                            {
-                                                                text: "Alterar",
-                                                                onPress: () => Alert.alert(
-                                                                    item.name,
-                                                                    "Abrir evento no formulário."
-                                                                )
-                                                            },
-                                                            {
-                                                                text: "Remover",
-                                                                onPress: () => Alert.alert(
-                                                                    item.name,
-                                                                    "Remover evento dos dados."
-                                                                )
+                                                onLongPress={() => !selectMode && item.category !== "Holiday" && Alert.alert(
+                                                    item.name,
+                                                    "Removê-lo ou copiar endereço?",
+                                                    [
+                                                        { text: "Voltar" },
+                                                        {
+                                                            text: "Copiar",
+                                                            onPress: () => {
+                                                                if (item.address.trim().length == 0) Alert.alert(item.name, "Nenhuma localidade incluída.");
+                                                                else Clipboard.setString(item.address);
                                                             }
-                                                        ],
-                                                        { cancelable: true }
-                                                    )
-                                                }}
+                                                        },
+                                                        {
+                                                            text: "Remover",
+                                                            onPress: async () => {
+                                                                const events = await getData("events", true);
+                                                                if (events && events.length > 0) {
+                                                                    const tempData = [...events].filter((event) => parseInt(event.id) !== item.id);
+                                                                    if (tempData.length == 0) removeData("events");
+                                                                    else storeData("events", tempData, true);
+                                                                    replaceRoute(navigation, "HomeScreen");
+                                                                }
+                                                            }
+                                                        }
+                                                    ],
+                                                    { cancelable: true }
+                                                )}
                                                 style={{ flexDirection: "row", flex: 1 }}>
-                                                {selectMode && item.icon !== "Holiday" && (
+                                                {selectMode && item.category !== "Holiday" && (
                                                     <View
                                                         style={{
                                                             marginRight: globals.app.width / 42,
@@ -302,66 +399,99 @@ const HomeScreen = ({ navigation }) => {
                                                         borderRadius: globals.app.width / 32,
                                                         marginTop: globals.app.width / 42,
                                                         padding: globals.app.width / 42,
-                                                        flexDirection: "row",
+                                                        justifyContent: "center",
                                                         alignItems: "center",
                                                         elevation: 2,
                                                         flex: 1
                                                     }}>
                                                     <View
                                                         style={{
-                                                            borderColor: category === data[0].category ? "#7300ff" : category === data[1].category ? "#aa00ff" : "#ff00a2",
-                                                            borderRadius: globals.app.width / 32,
-                                                            borderWidth: globals.app.width / 200,
-                                                            marginRight: globals.app.width / 36,
-                                                            borderRadius: globals.app.circle,
-                                                            borderStyle: "dotted",
-                                                            elevation: 2
+                                                            flexDirection: "row",
+                                                            flex: 1
                                                         }}>
-                                                        <Image
-                                                            source={item.icon === "Holiday" ? require("../assets/Holiday.png") : null}
+                                                        <View
                                                             style={{
+                                                                borderColor: category === data[0].category ? "#7300ff" : category === data[1].category ? "#aa00ff" : "#ff00a2",
+                                                                borderRadius: globals.app.width / 32,
+                                                                borderWidth: globals.app.width / 200,
+                                                                marginRight: globals.app.width / 36,
                                                                 borderRadius: globals.app.circle,
-                                                                height: globals.app.width / 6.2,
-                                                                margin: globals.app.width / 106,
-                                                                width: globals.app.width / 6.2
-                                                            }}
-                                                        />
+                                                                justifyContent: "center",
+                                                                borderStyle: "dotted",
+                                                                alignItems: "center",
+                                                                elevation: 2,
+                                                                flex: 0
+                                                            }}>
+                                                            <Image
+                                                                source={
+                                                                    item.category === "Academic" ? require("../assets/Academic.png") :
+                                                                        item.category === "Birthday" ? require("../assets/Birthday.png") :
+                                                                            item.category === "Business" ? require("../assets/Business.png") :
+                                                                                item.category === "Holiday" ? require("../assets/Holiday.png") :
+                                                                                    item.category === "Medicine" ? require("../assets/Medicine.png") :
+                                                                                        item.category === "Relationship" ? require("../assets/Relationship.png") :
+                                                                                            require("../assets/Reminder.png")
+                                                                }
+                                                                style={{
+                                                                    borderRadius: globals.app.circle,
+                                                                    height: globals.app.width / 7.2,
+                                                                    margin: globals.app.width / 106,
+                                                                    width: globals.app.width / 7.2
+                                                                }}
+                                                            />
+                                                        </View>
+                                                        <View
+                                                            style={{
+                                                                justifyContent: "center",
+                                                                flex: 1
+                                                            }}>
+                                                            <Text
+                                                                numberOfLines={1}
+                                                                style={{
+                                                                    color: category === data[0].category ? "#7300ff" : category === data[1].category ? "#aa00ff" : "#ff00a2",
+                                                                    fontSize: globals.app.width / 22
+                                                                }}>
+                                                                {item.name}
+                                                            </Text>
+                                                            <Text
+                                                                numberOfLines={1}
+                                                                style={{
+                                                                    fontSize: globals.app.width / 28,
+                                                                    color: globals.colors.tint,
+
+                                                                }}>
+                                                                {formatDate(item.startDate, false)}
+                                                            </Text>
+                                                            <Text
+                                                                numberOfLines={1}
+                                                                style={{
+                                                                    fontSize: globals.app.width / 28,
+                                                                    color: globals.colors.placeholder
+                                                                }}>
+                                                                {startTime} - {endTime}
+                                                            </Text>
+                                                        </View>
                                                     </View>
                                                     <View
                                                         style={{
-                                                            justifyContent: "center",
-                                                            flex: 1
+                                                            marginTop: globals.app.width / 42,
+                                                            alignSelf: "flex-start",
+                                                            width: "100%"
                                                         }}>
                                                         <Text
                                                             numberOfLines={1}
                                                             style={{
-                                                                color: category === data[0].category ? "#7300ff" : category === data[1].category ? "#aa00ff" : "#ff00a2",
-                                                                fontSize: globals.app.width / 22
+                                                                fontSize: globals.app.width / 26.72,
+                                                                color: globals.colors.foreground,
+                                                                flex: 1
                                                             }}>
-                                                            {item.name}
+                                                            {item.address.trim().length > 0 ? item.address : "Nenhuma localidade incluída."}
                                                         </Text>
                                                         <Text
-                                                            numberOfLines={1}
+                                                            numberOfLines={3}
                                                             style={{
-                                                                fontSize: globals.app.width / 28,
-                                                                color: globals.colors.tint,
-
-                                                            }}>
-                                                            {formatDate(item.startDate, false)}
-                                                        </Text>
-                                                        <Text
-                                                            numberOfLines={1}
-                                                            style={{
-                                                                fontSize: globals.app.width / 28,
-                                                                color: globals.colors.placeholder
-                                                            }}>
-                                                            {startTime} - {endTime}
-                                                        </Text>
-                                                        <Text
-                                                            style={{
-                                                                marginTop: globals.app.width / 22,
                                                                 color: globals.colors.placeholder,
-                                                                fontSize: globals.app.width / 26,
+                                                                fontSize: globals.app.width / 28,
                                                                 textAlign: "justify"
                                                             }}>
                                                             {item.description.trim().length > 0 ? item.description : "Nenhuma descrição incluída."}
@@ -408,7 +538,7 @@ const HomeScreen = ({ navigation }) => {
                 )}
                 <RoundButton
                     iconName={selectMode ? "close" : "delete"}
-                    backgroundColor="#2db3aa"
+                    backgroundColor={selectMode ? "#652db3" : "#2db3aa"}
                     onPress={() => {
                         if (selectMode) {
                             setSelectMode(false);
@@ -418,8 +548,8 @@ const HomeScreen = ({ navigation }) => {
                     }}
                 />
                 <RoundButton
-                    iconName={selectMode ? "check" : "dashboard-customize"}
-                    backgroundColor="#2db367"
+                    iconName={selectMode ? "delete-sweep" : "dashboard-customize"}
+                    backgroundColor={selectMode ? "#b32d2d" : "#2db367"}
                     onPress={() => {
                         if (selectMode) {
                             if (selectedItems.length > 0) {
@@ -430,7 +560,17 @@ const HomeScreen = ({ navigation }) => {
                                         { text: "Cancelar" },
                                         {
                                             text: "Confirmar",
-                                            onPress: () => Alert.alert("Remover selecionados", "Removendo selecionados...")
+                                            onPress: async () => {
+                                                const events = await getData("events", true);
+                                                if (events && events.length > 0) {
+                                                    const tempData = [...events].filter((event) => !selectedItems.includes(parseInt(event.id)));
+                                                    if (tempData.length == 0) removeData("events");
+                                                    else storeData("events", tempData, true);
+                                                    replaceRoute(navigation, "HomeScreen");
+                                                }
+                                                setSelectedItems([]);
+                                                setSelectMode(false);
+                                            }
                                         }
                                     ],
                                     { cancelable: true }
