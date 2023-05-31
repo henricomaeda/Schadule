@@ -72,14 +72,6 @@ const DetailsScreen = ({ navigation }) => {
 
     return (
         <View style={{ flex: 1 }}>
-            <View
-                style={{
-                    bottom: globals.app.width / 26,
-                    right: globals.app.width / 26,
-                    position: "absolute"
-                }}>
-                <RoundButton iconName="forward" onPress={() => navigateToHome(navigation)} />
-            </View>
             <ScrollView
                 contentContainerStyle={{
                     padding: globals.app.width / 20,
@@ -117,6 +109,14 @@ const DetailsScreen = ({ navigation }) => {
                     onPress={() => Linking.openURL("https://reactnative.dev")}
                 />
             </ScrollView>
+            <View
+                style={{
+                    bottom: globals.app.width / 26,
+                    right: globals.app.width / 26,
+                    position: "absolute"
+                }}>
+                <RoundButton iconName="forward" onPress={() => navigateToHome(navigation)} />
+            </View>
         </View>
     )
 };
