@@ -133,22 +133,25 @@ const HomeScreen = ({ isMenuOpen, setIsMenuOpen, navigation }) => {
         if (hour < 0) hour += 24;
         if (hour > 23) hour -= 24;
 
-        if (hour == 0) return "#899aa1";
-        else if (hour < 5) return "#6a6c7a";
-        else if (hour < 10) return "#faf5c8";
-        else if (hour < 13) return "#fad889";
-        else if (hour < 17) return "#fbbe9a";
-        else if (hour < 20) return "#bda2a2";
-        else return "#899aa1"
+        if (hour <= 1) return "#353d85";
+        else if (hour <= 3) return "#2a7b9b";
+        else if (hour <= 5) return "#00baad";
+        else if (hour <= 7) return "#eddd53";
+        else if (hour <= 9) return "#ffc300";
+        else if (hour <= 11) return "#ff8d1a";
+        else if (hour <= 13) return "#ff5733";
+        else if (hour <= 15) return "#c70039";
+        else if (hour <= 17) return "#900c3f";
+        else if (hour <= 19) return "#511849";
+        else if (hour <= 21) return "#502c6b";
+        else return "#443273";
     };
 
     // Returns an array of colors based on the given hours.
     const getColorPalette = hours => [
-        getHourColor(hours + 2),
         getHourColor(hours + 1),
         getHourColor(hours),
-        getHourColor(hours - 1),
-        getHourColor(hours - 2)
+        getHourColor(hours - 1)
     ];
 
     // Define a gradient of colors based on the current hour.
