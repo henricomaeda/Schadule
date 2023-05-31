@@ -41,8 +41,8 @@ export default function App() {
               onPress={() => navigateToHome(navigation)}>
               <Icon
                 color={globals.colors.placeholder}
-                size={globals.app.width / 18}
-                name="chevron-left"
+                size={globals.app.width / 18.2}
+                name="arrow-back"
               />
             </TouchableOpacity>
           ),
