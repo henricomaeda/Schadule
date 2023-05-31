@@ -1,4 +1,4 @@
-
+// Import necessary modules and dependencies.
 import { formatTime, formatDate, generateUniqueId } from "../utils/Functions";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import Icon from "react-native-vector-icons/MaterialIcons";
@@ -19,7 +19,7 @@ import {
 } from "react-native";
 
 const FormScreen = ({ navigation, route }) => {
-    const [id, setId] = React.useState(route.params ? JSON.parse(route.params).id : -1);
+    const id = route.params ? JSON.parse(route.params).id : -1;
     const [name, setName] = React.useState("");
     const [address, setAddress] = React.useState("");
     const [startDate, setStartDate] = React.useState(new Date());
