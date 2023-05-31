@@ -119,12 +119,15 @@ const HomeScreen = ({ isMenuOpen, setIsMenuOpen, navigation }) => {
     React.useEffect(() => {
         const unsubscribeBackPress = BackHandler.addEventListener('hardwareBackPress', handleBackPress);
         const unsubscribe = navigation.addListener('focus', fetchData);
-        const interval = setInterval(() => setDate(new Date()), 1000);
+
+        const updateDate = () => navigation.isFocused() && setDate(new Date());
+        const interval = navigation.isFocused() && setInterval(updateDate, 1000);
+
         return () => {
             setLoading(true);
             clearInterval(interval);
             unsubscribeBackPress.remove();
-            unsubscribe;
+            unsubscribe();
         };
     }, [isMenuOpen, selectMode]);
 
@@ -166,7 +169,10 @@ const HomeScreen = ({ isMenuOpen, setIsMenuOpen, navigation }) => {
 
     const OptionLabel = ({ name, screen = "" }) => (
         <TouchableOpacity
-            onPress={() => screen.trim().length !== 0 && navigateToScreen(navigation, screen)}
+            onPress={() => {
+                setIsMenuOpen(false);
+                if (screen.trim().length !== 0) setTimeout((() => navigateToScreen(navigation, screen)), 0);
+            }}
             style={{
                 paddingHorizontal: globals.app.width / 40,
                 paddingVertical: globals.app.width / 36
@@ -187,7 +193,6 @@ const HomeScreen = ({ isMenuOpen, setIsMenuOpen, navigation }) => {
             {isMenuOpen && (
                 <>
                     <View
-                        onTouchEnd={() => setIsMenuOpen(false)}
                         style={{
                             borderBottomLeftRadius: globals.app.width / 20,
                             backgroundColor: globals.colors.foreground,
@@ -595,4 +600,4 @@ const styles = StyleSheet.create({
         fontSize: globals.app.width / 20,
         color: globals.colors.tint
     }
-})
+});
