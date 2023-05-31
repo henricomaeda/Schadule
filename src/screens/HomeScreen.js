@@ -110,7 +110,7 @@ const HomeScreen = ({ isMenuOpen, setIsMenuOpen, navigation }) => {
 
     // Define a function to handle when user press the return button.
     const handleBackPress = () => {
-        if (selectMode) {
+        if (selectMode && navigation.isFocused()) {
             setSelectMode(false);
             setSelectedItems([]);
             return true;
@@ -125,7 +125,7 @@ const HomeScreen = ({ isMenuOpen, setIsMenuOpen, navigation }) => {
     // Define a constructor to update the time in real-time and retrieve data.
     React.useEffect(() => {
         const unsubscribeBackPress = BackHandler.addEventListener("hardwareBackPress", handleBackPress);
-        const unsubscribe = navigation.addListener("focus", fetchData);
+        const unsubscribeFocus = navigation.addListener("focus", fetchData);
 
         const updateDate = () => navigation.isFocused() && setDate(new Date());
         const interval = navigation.isFocused() && setInterval(updateDate, 1000);
@@ -133,7 +133,7 @@ const HomeScreen = ({ isMenuOpen, setIsMenuOpen, navigation }) => {
         return () => {
             clearInterval(interval);
             unsubscribeBackPress.remove();
-            unsubscribe();
+            unsubscribeFocus();
         };
     }, [isMenuOpen, selectMode]);
 
