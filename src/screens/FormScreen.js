@@ -241,6 +241,7 @@ const FormScreen = ({ navigation, route }) => {
                         <DateTimePicker
                             mode="date"
                             value={startDate}
+                            themeVariant="dark"
                             onChange={(event, date) => handleDateChange(date)}
                         />
                     )}
@@ -249,6 +250,7 @@ const FormScreen = ({ navigation, route }) => {
                             mode="time"
                             is24Hour={true}
                             value={startDate}
+                            themeVariant="dark"
                             onChange={(event, date) => handleTimeChange(date)}
                         />
                     )}
@@ -257,6 +259,7 @@ const FormScreen = ({ navigation, route }) => {
                             mode="time"
                             is24Hour={true}
                             value={endDate}
+                            themeVariant="dark"
                             onChange={(event, date) => handleTimeChange(date, false)}
                         />
                     )}
