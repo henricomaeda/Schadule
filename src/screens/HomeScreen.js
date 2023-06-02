@@ -186,6 +186,7 @@ const HomeScreen = ({ isMenuOpen, setIsMenuOpen, navigation }) => {
             <Text
                 style={{
                     fontSize: globals.app.width / 22,
+                    color: globals.colors.tint
                 }}>
                 {name}
             </Text>
@@ -271,7 +272,7 @@ const HomeScreen = ({ isMenuOpen, setIsMenuOpen, navigation }) => {
                             top: 0
                         }}>
                         <OptionLabel name="Novo evento" screen="FormScreen" />
-                        <OptionLabel name="Backup" screen="DataScreen" />
+                        <OptionLabel name="Dados" screen="DataScreen" />
                         <OptionLabel name="Sobre" screen="DetailsScreen" />
                     </View>
                     <TouchableOpacity
