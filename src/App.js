@@ -22,6 +22,10 @@ const NavigationTheme = {
   },
 };
 
+// TODO: Verify why is it the application's icon border white?
+// TODO: Push local notification to specific dates.
+// TODO: Comment in all files.
+
 // Create a native stack navigator component.
 const Stack = createNativeStackNavigator();
 export default function App() {
@@ -46,36 +50,37 @@ export default function App() {
               />
             </TouchableOpacity>
           ),
-          headerRight: () => route.name === "HomeScreen" && (
+          headerRight: () => ["HomeScreen", "DataScreen"].includes(route.name) && (
             <TouchableOpacity
               activeOpacity={1}
               onPress={() => setIsMenuOpen(false)}
-              style={{
+              style={[{
                 height: globals.app.width / 10,
                 justifyContent: "flex-end",
                 flexDirection: "row",
-                alignItems: "center",
-                flex: 1,
-              }}>
+                alignItems: "center"
+              }, route.name === "HomeScreen" && { flex: 1 }]}>
               <TouchableOpacity
                 onPress={() => {
                   setIsMenuOpen(false);
                   setTimeout((() => replaceRoute(navigation, route.name)), 0);
-                }}
-                style={{ marginRight: globals.app.width / 42 }}>
+                }}>
                 <Icon
                   color={globals.colors.placeholder}
                   size={globals.app.width / 18}
                   name="cached"
                 />
               </TouchableOpacity>
-              <TouchableOpacity onPress={() => setIsMenuOpen(!isMenuOpen)}>
-                <Icon
-                  color={globals.colors.placeholder}
-                  size={globals.app.width / 18}
-                  name="more-vert"
-                />
-              </TouchableOpacity>
+              {route.name === "HomeScreen" && (
+                <TouchableOpacity onPress={() => setIsMenuOpen(!isMenuOpen)}
+                  style={{ marginLeft: globals.app.width / 42 }}>
+                  <Icon
+                    color={globals.colors.placeholder}
+                    size={globals.app.width / 18}
+                    name="more-vert"
+                  />
+                </TouchableOpacity>
+              )}
             </TouchableOpacity>
           )
         })}>
