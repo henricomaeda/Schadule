@@ -33,6 +33,9 @@ const HomeScreen = ({ isMenuOpen, setIsMenuOpen, navigation }) => {
     const [showHolidays, setShowHolidays] = React.useState(true);
     const [showCategories, setShowCategories] = React.useState(true);
     const [failed, setFailed] = React.useState(false);
+    const [showPresent, setShowPresent] = React.useState(true);
+    const [showFuture, setShowFuture] = React.useState(true);
+    const [showPast, setShowPast] = React.useState(false);
 
     // Fetches data by retrieving holidays and transforming it.
     const fetchData = async () => {
@@ -120,9 +123,9 @@ const HomeScreen = ({ isMenuOpen, setIsMenuOpen, navigation }) => {
                 else result[2].items.push(item);
                 return result;
             }, [
-                { category: "Acontecendo agora", show: true, items: [] },
-                { category: "Acontecerá", show: true, items: [] },
-                { category: "Aconteceu", show: false, items: [] },
+                { category: "Acontecendo agora", show: showPresent, setShow: setShowPresent, items: [] },
+                { category: "Acontecerá", show: showFuture, setShow: setShowFuture, items: [] },
+                { category: "Aconteceu", show: showPast, setShow: setShowPast, items: [] },
             ]);
             setData([...transformedData]);
             setLoading(false);
@@ -431,16 +434,6 @@ const HomeScreen = ({ isMenuOpen, setIsMenuOpen, navigation }) => {
                         renderItem={({ item }) => {
                             const showItems = item.show;
                             const category = item.category;
-                            const handleShow = (category) => {
-                                const updatedData = data.map(item => {
-                                    if (item.category === category) {
-                                        return { ...item, show: !showItems };
-                                    }
-                                    return item;
-                                });
-
-                                setData(updatedData);
-                            };
 
                             let length = 0;
                             if (!showHolidays || selectMode) length = item.items.filter(item => item.category !== "Holiday").length;
@@ -450,7 +443,7 @@ const HomeScreen = ({ isMenuOpen, setIsMenuOpen, navigation }) => {
                                 <View style={{ flex: 1 }}>
                                     {(showCategories && !selectMode) && (
                                         <TouchableOpacity
-                                            onPress={() => handleShow(item.category)}
+                                            onPress={() => item.setShow(previousValue => !previousValue)}
                                             style={{
                                                 backgroundColor: globals.colors.midground,
                                                 borderRadius: globals.app.width / 32,
