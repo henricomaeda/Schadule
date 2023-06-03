@@ -22,10 +22,6 @@ const NavigationTheme = {
   },
 };
 
-// TODO: Verify why is it the application's icon border white?
-// TODO: Push local notification to specific dates.
-// TODO: Comment in all files.
-
 // Create a native stack navigator component.
 const Stack = createNativeStackNavigator();
 export default function App() {
