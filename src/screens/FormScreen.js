@@ -47,6 +47,7 @@ const FormScreen = ({ navigation, route }) => {
                     setEndDate(new Date(event.endDate));
                     setAnnually(Boolean(event.annually));
                     setAllDay(Boolean(event.allDay));
+                    setNotify(Boolean(event.notify));
                     setCategory(event.category);
                     setDescription(event.description);
                 }

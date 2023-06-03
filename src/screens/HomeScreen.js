@@ -11,6 +11,7 @@ import { globals } from "../Globals";
 import * as React from "react";
 import {
     BackHandler,
+    ScrollView,
     Clipboard,
     Alert,
     Image,
@@ -31,6 +32,7 @@ const HomeScreen = ({ isMenuOpen, setIsMenuOpen, navigation }) => {
     const [data, setData] = React.useState([]);
     const [showHolidays, setShowHolidays] = React.useState(true);
     const [showCategories, setShowCategories] = React.useState(true);
+    const [failed, setFailed] = React.useState(false);
 
     // Fetches data by retrieving holidays and transforming it.
     const fetchData = async () => {
@@ -66,11 +68,12 @@ const HomeScreen = ({ isMenuOpen, setIsMenuOpen, navigation }) => {
                     scheduleNotification(newItem.name.trim(), newItem.category.trim(), newItem.startDate);
 
                     // If the event is teen minutes before now, notify before.
-                    const now = new Date().setMilliseconds(0);
-                    const newDate = newItem.startDate.setMilliseconds(0);
+                    const now = new Date();
+                    now.setMilliseconds(0);
+                    const newDate = newItem.startDate;
+                    newDate.setMilliseconds(0);
                     newDate.setMinutes(newDate.getMinutes() - 10);
-                    const isLater = newDate >= now;
-                    if (isLater) scheduleNotification(newItem.name.trim(), newItem.category.trim(), newDate, true);
+                    if (newDate >= now) scheduleNotification(newItem.name.trim(), newItem.category.trim(), newDate, true);
                 };
 
                 data.push(newItem);
@@ -121,7 +124,7 @@ const HomeScreen = ({ isMenuOpen, setIsMenuOpen, navigation }) => {
         }
         catch (error) {
             console.error("Error while loading:", error);
-            setTimeout(() => replaceRoute(navigation, "HomeScreen"), 3200);
+            setFailed(true);
         }
     };
 
@@ -255,26 +258,6 @@ const HomeScreen = ({ isMenuOpen, setIsMenuOpen, navigation }) => {
     const flatlistRef = React.useRef(null);
     return (
         <View style={{ flex: 1 }}>
-            {selectMode && (
-                <View
-                    style={{
-                        borderBottomRightRadius: globals.app.width / 46.2,
-                        borderBottomLeftRadius: globals.app.width / 46.2,
-                        padding: globals.app.width / 46,
-                        backgroundColor: "#b3552d",
-                        width: "100%"
-                    }}>
-                    <Text
-                        numberOfLines={1}
-                        style={{
-                            fontSize: globals.app.width / 24.2,
-                            color: globals.colors.tint,
-                            textAlign: "center"
-                        }}>
-                        {selectedItems.length} {selectedItems.length == 1 ? "evento selecionado" : "eventos selecionados"}
-                    </Text>
-                </View>
-            )}
             {isMenuOpen && (
                 <>
                     <View
@@ -304,460 +287,529 @@ const HomeScreen = ({ isMenuOpen, setIsMenuOpen, navigation }) => {
                     />
                 </>
             )}
-            <FlatList
-                data={data}
-                ref={flatlistRef}
-                onScroll={handleScroll}
-                contentContainerStyle={{
-                    padding: globals.app.width / 22.6,
-                    flexGrow: 1
-                }}
-                ListHeaderComponent={() => (
-                    <>
+            {failed ? (
+                <ScrollView
+                    contentContainerStyle={{
+                        margin: globals.app.width / 16,
+                        justifyContent: "center",
+                        alignItems: "center",
+                        flexGrow: 1
+                    }}>
+                    <TouchableOpacity
+                        onPress={() => replaceRoute(navigation, "HomeScreen")}
+                        style={{
+                            backgroundColor: globals.colors.midground,
+                            borderRadius: globals.app.width / 32,
+                            padding: globals.app.width / 20,
+                            justifyContent: "center",
+                            alignItems: "center",
+                            overflow: "hidden",
+                            elevation: 10
+                        }}>
+                        <Icon
+                            size={globals.app.width / 6}
+                            color="#e6476f"
+                            name="warning"
+                        />
+                        <Text
+                            style={{
+                                marginVertical: globals.app.width / 30,
+                                fontSize: globals.app.width / 16,
+                                textAlign: "center",
+                                fontWeight: "bold",
+                                color: "#e6476f"
+                            }}>
+                            Falha de gerenciamento
+                        </Text>
+                        <Text
+                            style={{
+                                lineHeight: globals.app.width / 16.2,
+                                fontSize: globals.app.width / 20,
+                                textAlign: "justify",
+                                color: "#e6476f"
+                            }}>
+                            Desculpe, mas encontramos um problema ao tentar gerenciar, carregar ou agendar os eventos. Aperte para tentar recarregar ou entre em contato com o desenvolvedor para obter mais assistência.
+                        </Text>
+                    </TouchableOpacity>
+                </ScrollView>
+            ) : (
+                <>
+                    {selectMode && (
                         <View
                             style={{
-                                backgroundColor: globals.colors.midground,
-                                borderRadius: globals.app.width / 32,
-                                padding: globals.app.width / 42,
-                                flexDirection: "row",
-                                elevation: 10
+                                borderBottomRightRadius: globals.app.width / 46.2,
+                                borderBottomLeftRadius: globals.app.width / 46.2,
+                                padding: globals.app.width / 46,
+                                backgroundColor: "#b3552d",
+                                width: "100%"
                             }}>
-                            <LinearGradient
-                                colors={gradientColors}
-                                start={{ x: 0, y: 0 }}
-                                end={{ x: 0, y: 1 }}
+                            <Text
+                                numberOfLines={1}
                                 style={{
-                                    borderRadius: globals.app.width / 32,
-                                    padding: globals.app.width / 42,
-                                    flex: 0
-                                }}
-                            />
-                            <View
-                                style={{
-                                    padding: globals.app.width / 42,
-                                    justifyContent: "center",
-                                    alignItems: "center",
-                                    flex: 1
+                                    fontSize: globals.app.width / 24.2,
+                                    color: globals.colors.tint,
+                                    textAlign: "center"
                                 }}>
-                                <Text
-                                    numberOfLines={1}
-                                    style={[
-                                        styles.default_text,
-                                        { fontSize: globals.app.width / 12 }
-                                    ]}>
-                                    {formatTime(date.getHours())}:{formatTime(date.getMinutes())}
-                                    <Text
-                                        numberOfLines={1}
-                                        style={styles.default_text}>
-                                        :{formatTime(date.getSeconds())}
-                                    </Text>
-                                </Text>
-                                <Text
-                                    numberOfLines={1}
-                                    style={styles.default_text}>
-                                    {formatDate(date)}
-                                </Text>
-                            </View>
+                                {selectedItems.length} {selectedItems.length == 1 ? "evento selecionado" : "eventos selecionados"}
+                            </Text>
                         </View>
-                        <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
-                            <CustomFilter
-                                name="Categorias"
-                                value={showCategories}
-                                setValue={setShowCategories}
-                            />
-                            <CustomFilter
-                                name="Feriados nacionais"
-                                value={showHolidays}
-                                setValue={setShowHolidays}
-                            />
-                        </View>
-                    </>
-                )}
-                renderItem={({ item }) => {
-                    const showItems = item.show;
-                    const category = item.category;
-                    const handleShow = (category) => {
-                        const updatedData = data.map(item => {
-                            if (item.category === category) {
-                                return { ...item, show: !showItems };
-                            }
-                            return item;
-                        });
-
-                        setData(updatedData);
-                    };
-
-                    let length = 0;
-                    if (!showHolidays || selectMode) length = item.items.filter(item => item.category !== "Holiday").length;
-                    else length = item.items.length;
-
-                    if (length > 0) return (
-                        <View style={{ flex: 1 }}>
-                            {(showCategories && !selectMode) && (
-                                <TouchableOpacity
-                                    onPress={() => handleShow(item.category)}
+                    )}
+                    <FlatList
+                        data={data}
+                        ref={flatlistRef}
+                        onScroll={handleScroll}
+                        contentContainerStyle={{
+                            padding: globals.app.width / 22.6,
+                            flexGrow: 1
+                        }}
+                        ListHeaderComponent={() => (
+                            <>
+                                <View
                                     style={{
                                         backgroundColor: globals.colors.midground,
                                         borderRadius: globals.app.width / 32,
-                                        marginTop: globals.app.width / 30,
                                         padding: globals.app.width / 42,
                                         flexDirection: "row",
-                                        alignItems: "center",
-                                        elevation: 6
+                                        elevation: 10
                                     }}>
-                                    <Icon
-                                        color={globals.colors.placeholder}
-                                        size={globals.app.width / 18}
-                                        stlye={{ flex: 0 }}
-                                        name="loyalty"
+                                    <LinearGradient
+                                        colors={gradientColors}
+                                        start={{ x: 0, y: 0 }}
+                                        end={{ x: 0, y: 1 }}
+                                        style={{
+                                            borderRadius: globals.app.width / 32,
+                                            padding: globals.app.width / 42,
+                                            flex: 0
+                                        }}
                                     />
                                     <View
                                         style={{
-                                            marginLeft: globals.app.width / 62,
-                                            justifyContent: "space-between",
-                                            flexDirection: "row",
+                                            padding: globals.app.width / 42,
+                                            justifyContent: "center",
                                             alignItems: "center",
                                             flex: 1
                                         }}>
                                         <Text
                                             numberOfLines={1}
-                                            style={{
-                                                color: globals.colors.placeholder,
-                                                fontSize: globals.app.width / 17.2,
-                                                fontWeight: "600"
-                                            }}>
-                                            {item.category}
+                                            style={[
+                                                styles.default_text,
+                                                { fontSize: globals.app.width / 12 }
+                                            ]}>
+                                            {formatTime(date.getHours())}:{formatTime(date.getMinutes())}
+                                            <Text
+                                                numberOfLines={1}
+                                                style={styles.default_text}>
+                                                :{formatTime(date.getSeconds())}
+                                            </Text>
                                         </Text>
-                                        <Icon
-                                            name={item.show ? "expand-more" : "expand-less"}
-                                            color={globals.colors.placeholder}
-                                            size={globals.app.width / 12}
-                                        />
+                                        <Text
+                                            numberOfLines={1}
+                                            style={styles.default_text}>
+                                            {formatDate(date)}
+                                        </Text>
                                     </View>
-                                </TouchableOpacity>
-                            )}
-                            <FlatList
-                                data={item.items}
-                                renderItem={({ item }) => {
-                                    if (!selectMode && !showItems && showCategories) return;
-                                    if (selectMode && item.category === "Holiday") return;
-                                    if (!showHolidays && item.category === "Holiday") return;
-                                    const startTime = `${formatTime(item.startDate.getHours())}:${formatTime(item.startDate.getMinutes())}`;
-                                    const endTime = `${formatTime(item.endDate.getHours())}:${formatTime(item.endDate.getMinutes())}`;
+                                </View>
+                                <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
+                                    <CustomFilter
+                                        name="Categorias"
+                                        value={showCategories}
+                                        setValue={setShowCategories}
+                                    />
+                                    <CustomFilter
+                                        name="Feriados nacionais"
+                                        value={showHolidays}
+                                        setValue={setShowHolidays}
+                                    />
+                                </View>
+                            </>
+                        )}
+                        renderItem={({ item }) => {
+                            const showItems = item.show;
+                            const category = item.category;
+                            const handleShow = (category) => {
+                                const updatedData = data.map(item => {
+                                    if (item.category === category) {
+                                        return { ...item, show: !showItems };
+                                    }
+                                    return item;
+                                });
 
-                                    const idSelected = selectedItems.some(id => id === item.id);
-                                    const handleSelect = () => {
-                                        const newSelected = [...selectedItems].filter(id => id !== item.id);
-                                        if (!idSelected) newSelected.push(item.id);
-                                        setSelectedItems(newSelected);
-                                    };
+                                setData(updatedData);
+                            };
 
-                                    return (
+                            let length = 0;
+                            if (!showHolidays || selectMode) length = item.items.filter(item => item.category !== "Holiday").length;
+                            else length = item.items.length;
+
+                            if (length > 0) return (
+                                <View style={{ flex: 1 }}>
+                                    {(showCategories && !selectMode) && (
                                         <TouchableOpacity
-                                            onPress={() => {
-                                                if (item.category !== "Holiday") {
-                                                    if (selectMode) handleSelect();
-                                                    else if (item.category !== "Holiday") navigateToScreen(navigation, "FormScreen", { id: item.id });
-                                                }
-                                            }}
-                                            onLongPress={() => !selectMode && item.category !== "Holiday" && Alert.alert(
-                                                item.name,
-                                                "Removê-lo ou copiar endereço?",
-                                                [
-                                                    { text: "Voltar" },
-                                                    {
-                                                        text: "Copiar",
-                                                        onPress: () => {
-                                                            if (item.address.trim().length == 0) Alert.alert(item.name, "Nenhuma localidade incluída.");
-                                                            else Clipboard.setString(item.address);
-                                                        }
-                                                    },
-                                                    {
-                                                        text: "Remover",
-                                                        onPress: async () => {
-                                                            const events = await getData("events", true);
-                                                            if (events && events.length > 0) {
-                                                                const tempData = [...events].filter((event) => parseInt(event.id) !== item.id);
-                                                                if (tempData.length == 0) removeData("events");
-                                                                else storeData("events", tempData, true);
-                                                                fetchData();
-                                                            }
-                                                        }
-                                                    }
-                                                ],
-                                                { cancelable: true }
-                                            )}
-                                            style={{ flexDirection: "row", flex: 1 }}>
-                                            {selectMode && item.category !== "Holiday" && (
-                                                <View
-                                                    style={{
-                                                        marginRight: globals.app.width / 42,
-                                                        justifyContent: "center",
-                                                        alignItems: "center",
-                                                        flex: 0
-                                                    }}>
-                                                    <Icon
-                                                        name="check"
-                                                        color={globals.colors.placeholder}
-                                                        size={globals.app.width / 16}
-                                                        style={{
-                                                            backgroundColor: idSelected ? globals.colors.foreground : globals.colors.placeholder,
-                                                            borderRadius: globals.app.width / 26,
-                                                            padding: globals.app.width / 62,
-                                                        }}
-                                                    />
-                                                </View>
-                                            )}
+                                            onPress={() => handleShow(item.category)}
+                                            style={{
+                                                backgroundColor: globals.colors.midground,
+                                                borderRadius: globals.app.width / 32,
+                                                marginTop: globals.app.width / 30,
+                                                padding: globals.app.width / 42,
+                                                flexDirection: "row",
+                                                alignItems: "center",
+                                                elevation: 6
+                                            }}>
+                                            <Icon
+                                                color={globals.colors.placeholder}
+                                                size={globals.app.width / 18}
+                                                stlye={{ flex: 0 }}
+                                                name="loyalty"
+                                            />
                                             <View
                                                 style={{
-                                                    backgroundColor: globals.colors.midground,
-                                                    borderRadius: globals.app.width / 32,
-                                                    marginTop: globals.app.width / 42,
-                                                    padding: globals.app.width / 42,
-                                                    justifyContent: "center",
+                                                    marginLeft: globals.app.width / 62,
+                                                    justifyContent: "space-between",
+                                                    flexDirection: "row",
                                                     alignItems: "center",
-                                                    elevation: 2,
                                                     flex: 1
                                                 }}>
-                                                <View
+                                                <Text
+                                                    numberOfLines={1}
                                                     style={{
-                                                        flexDirection: "row",
-                                                        flex: 1
+                                                        color: globals.colors.placeholder,
+                                                        fontSize: globals.app.width / 17.2,
+                                                        fontWeight: "600"
                                                     }}>
-                                                    <View
-                                                        style={{
-                                                            borderColor: category === data[0].category ? "#7300ff" : category === data[1].category ? "#aa00ff" : "#ff00a2",
-                                                            borderRadius: globals.app.width / 32,
-                                                            borderWidth: globals.app.width / 200,
-                                                            marginRight: globals.app.width / 36,
-                                                            borderRadius: globals.app.circle,
-                                                            justifyContent: "center",
-                                                            borderStyle: "dotted",
-                                                            alignItems: "center",
-                                                            alignSelf: "center",
-                                                            elevation: 2,
-                                                            flex: 0
-                                                        }}>
-                                                        <Image
-                                                            source={
-                                                                item.category === "Academic" ? require("../assets/Academic.png") :
-                                                                    item.category === "Birthday" ? require("../assets/Birthday.png") :
-                                                                        item.category === "Business" ? require("../assets/Business.png") :
-                                                                            item.category === "Holiday" ? require("../assets/Holiday.png") :
-                                                                                item.category === "Medicine" ? require("../assets/Medicine.png") :
-                                                                                    item.category === "Relationship" ? require("../assets/Relationship.png") :
-                                                                                        require("../assets/Reminder.png")
-                                                            }
-                                                            style={{
-                                                                margin: selectMode ? globals.app.width / 80 : globals.app.width / 86.2,
-                                                                height: selectMode ? globals.app.width / 10 : globals.app.width / 7.2,
-                                                                width: selectMode ? globals.app.width / 10 : globals.app.width / 7.2,
-                                                                borderRadius: globals.app.circle
-                                                            }}
-                                                        />
-                                                    </View>
-                                                    <View
-                                                        style={{
-                                                            justifyContent: "center",
-                                                            flex: 1
-                                                        }}>
-                                                        <Text
-                                                            numberOfLines={1}
-                                                            style={{
-                                                                color: category === data[0].category ? "#7300ff" : category === data[1].category ? "#aa00ff" : "#ff00a2",
-                                                                fontSize: selectMode ? globals.app.width / 26 : globals.app.width / 22
-                                                            }}>
-                                                            {item.name}
-                                                        </Text>
-                                                        <Text
-                                                            numberOfLines={1}
-                                                            style={{
-                                                                fontSize: globals.app.width / 28,
-                                                                color: globals.colors.tint,
-
-                                                            }}>
-                                                            {formatDate(item.startDate, false)}
-                                                        </Text>
-                                                        <Text
-                                                            numberOfLines={1}
-                                                            style={{
-                                                                fontSize: globals.app.width / 28,
-                                                                color: globals.colors.placeholder
-                                                            }}>
-                                                            {startTime} - {endTime}
-                                                        </Text>
-                                                    </View>
-                                                </View>
-                                                {!selectMode && (
-                                                    <View
-                                                        style={{
-                                                            marginTop: globals.app.width / 42,
-                                                            alignSelf: "flex-start",
-                                                            width: "100%"
-                                                        }}>
-                                                        <Text
-                                                            numberOfLines={1}
-                                                            style={{
-                                                                fontSize: globals.app.width / 26.72,
-                                                                color: globals.colors.foreground,
-                                                                flex: 1
-                                                            }}>
-                                                            {item.address.trim().length > 0 ? item.address : "Nenhuma localidade incluída."}
-                                                        </Text>
-                                                        <Text
-                                                            numberOfLines={3}
-                                                            style={{
-                                                                color: globals.colors.placeholder,
-                                                                fontSize: globals.app.width / 28,
-                                                                textAlign: "justify"
-                                                            }}>
-                                                            {item.description.trim().length > 0 ? item.description : "Nenhuma descrição incluída."}
-                                                        </Text>
-                                                    </View>
-                                                )}
+                                                    {item.category}
+                                                </Text>
+                                                <Icon
+                                                    name={item.show ? "expand-more" : "expand-less"}
+                                                    color={globals.colors.placeholder}
+                                                    size={globals.app.width / 12}
+                                                />
                                             </View>
                                         </TouchableOpacity>
+                                    )}
+                                    <FlatList
+                                        data={item.items}
+                                        renderItem={({ item }) => {
+                                            if (!selectMode && !showItems && showCategories) return;
+                                            if (selectMode && item.category === "Holiday") return;
+                                            if (!showHolidays && item.category === "Holiday") return;
+                                            const startTime = `${formatTime(item.startDate.getHours())}:${formatTime(item.startDate.getMinutes())}`;
+                                            const endTime = `${formatTime(item.endDate.getHours())}:${formatTime(item.endDate.getMinutes())}`;
+
+                                            const idSelected = selectedItems.some(id => id === item.id);
+                                            const handleSelect = () => {
+                                                const newSelected = [...selectedItems].filter(id => id !== item.id);
+                                                if (!idSelected) newSelected.push(item.id);
+                                                setSelectedItems(newSelected);
+                                            };
+
+                                            return (
+                                                <TouchableOpacity
+                                                    onPress={() => {
+                                                        if (item.category !== "Holiday") {
+                                                            if (selectMode) handleSelect();
+                                                            else if (item.category !== "Holiday" && navigation.isFocused()) navigateToScreen(navigation, "FormScreen", { id: item.id });
+                                                        }
+                                                    }}
+                                                    onLongPress={() => !selectMode && item.category !== "Holiday" && Alert.alert(
+                                                        item.name,
+                                                        "Removê-lo ou copiar endereço?",
+                                                        [
+                                                            { text: "Voltar" },
+                                                            {
+                                                                text: "Copiar",
+                                                                onPress: () => {
+                                                                    if (item.address.trim().length == 0) Alert.alert(item.name, "Nenhuma localidade incluída.");
+                                                                    else Clipboard.setString(item.address);
+                                                                }
+                                                            },
+                                                            {
+                                                                text: "Remover",
+                                                                onPress: async () => {
+                                                                    const events = await getData("events", true);
+                                                                    if (events && events.length > 0) {
+                                                                        const tempData = [...events].filter((event) => parseInt(event.id) !== item.id);
+                                                                        if (tempData.length == 0) removeData("events");
+                                                                        else storeData("events", tempData, true);
+                                                                        fetchData();
+                                                                    }
+                                                                }
+                                                            }
+                                                        ],
+                                                        { cancelable: true }
+                                                    )}
+                                                    style={{ flexDirection: "row", flex: 1 }}>
+                                                    {selectMode && item.category !== "Holiday" && (
+                                                        <View
+                                                            style={{
+                                                                marginRight: globals.app.width / 42,
+                                                                justifyContent: "center",
+                                                                alignItems: "center",
+                                                                flex: 0
+                                                            }}>
+                                                            <Icon
+                                                                name="check"
+                                                                color={globals.colors.placeholder}
+                                                                size={globals.app.width / 16}
+                                                                style={{
+                                                                    backgroundColor: idSelected ? globals.colors.foreground : globals.colors.placeholder,
+                                                                    borderRadius: globals.app.width / 26,
+                                                                    padding: globals.app.width / 62,
+                                                                }}
+                                                            />
+                                                        </View>
+                                                    )}
+                                                    <View
+                                                        style={{
+                                                            backgroundColor: globals.colors.midground,
+                                                            borderRadius: globals.app.width / 32,
+                                                            marginTop: globals.app.width / 42,
+                                                            padding: globals.app.width / 42,
+                                                            justifyContent: "center",
+                                                            alignItems: "center",
+                                                            elevation: 2,
+                                                            flex: 1
+                                                        }}>
+                                                        <View
+                                                            style={{
+                                                                flexDirection: "row",
+                                                                flex: 1
+                                                            }}>
+                                                            <View
+                                                                style={{
+                                                                    borderColor: category === data[0].category ? "#7300ff" : category === data[1].category ? "#aa00ff" : "#ff00a2",
+                                                                    borderRadius: globals.app.width / 32,
+                                                                    borderWidth: globals.app.width / 200,
+                                                                    marginRight: globals.app.width / 36,
+                                                                    borderRadius: globals.app.circle,
+                                                                    justifyContent: "center",
+                                                                    borderStyle: "dotted",
+                                                                    alignItems: "center",
+                                                                    alignSelf: "center",
+                                                                    elevation: 2,
+                                                                    flex: 0
+                                                                }}>
+                                                                <Image
+                                                                    source={
+                                                                        item.category === "Academic" ? require("../assets/Academic.png") :
+                                                                            item.category === "Birthday" ? require("../assets/Birthday.png") :
+                                                                                item.category === "Business" ? require("../assets/Business.png") :
+                                                                                    item.category === "Holiday" ? require("../assets/Holiday.png") :
+                                                                                        item.category === "Medicine" ? require("../assets/Medicine.png") :
+                                                                                            item.category === "Relationship" ? require("../assets/Relationship.png") :
+                                                                                                require("../assets/Reminder.png")
+                                                                    }
+                                                                    style={{
+                                                                        margin: selectMode ? globals.app.width / 80 : globals.app.width / 86.2,
+                                                                        height: selectMode ? globals.app.width / 10 : globals.app.width / 7.2,
+                                                                        width: selectMode ? globals.app.width / 10 : globals.app.width / 7.2,
+                                                                        borderRadius: globals.app.circle
+                                                                    }}
+                                                                />
+                                                            </View>
+                                                            <View
+                                                                style={{
+                                                                    justifyContent: "center",
+                                                                    flex: 1
+                                                                }}>
+                                                                <Text
+                                                                    numberOfLines={1}
+                                                                    style={{
+                                                                        color: category === data[0].category ? "#7300ff" : category === data[1].category ? "#aa00ff" : "#ff00a2",
+                                                                        fontSize: selectMode ? globals.app.width / 26 : globals.app.width / 22
+                                                                    }}>
+                                                                    {item.name}
+                                                                </Text>
+                                                                <Text
+                                                                    numberOfLines={1}
+                                                                    style={{
+                                                                        fontSize: globals.app.width / 28,
+                                                                        color: globals.colors.tint,
+
+                                                                    }}>
+                                                                    {formatDate(item.startDate, false)}
+                                                                </Text>
+                                                                <Text
+                                                                    numberOfLines={1}
+                                                                    style={{
+                                                                        fontSize: globals.app.width / 28,
+                                                                        color: globals.colors.placeholder
+                                                                    }}>
+                                                                    {startTime} - {endTime}
+                                                                </Text>
+                                                            </View>
+                                                        </View>
+                                                        {!selectMode && (
+                                                            <View
+                                                                style={{
+                                                                    marginTop: globals.app.width / 42,
+                                                                    alignSelf: "flex-start",
+                                                                    width: "100%"
+                                                                }}>
+                                                                <Text
+                                                                    numberOfLines={1}
+                                                                    style={{
+                                                                        fontSize: globals.app.width / 26.72,
+                                                                        color: globals.colors.foreground,
+                                                                        flex: 1
+                                                                    }}>
+                                                                    {item.address.trim().length > 0 ? item.address : "Nenhuma localidade incluída."}
+                                                                </Text>
+                                                                <Text
+                                                                    numberOfLines={3}
+                                                                    style={{
+                                                                        color: globals.colors.placeholder,
+                                                                        fontSize: globals.app.width / 28,
+                                                                        textAlign: "justify"
+                                                                    }}>
+                                                                    {item.description.trim().length > 0 ? item.description : "Nenhuma descrição incluída."}
+                                                                </Text>
+                                                            </View>
+                                                        )}
+                                                    </View>
+                                                </TouchableOpacity>
+                                            );
+                                        }}
+                                    />
+                                </View>
+                            );
+                        }}
+                        ListFooterComponent={() => {
+                            if (loading) return (
+                                <View
+                                    style={{
+                                        marginTop: globals.app.width / 30,
+                                        justifyContent: "center",
+                                        alignItems: "center",
+                                        flex: 1
+                                    }}>
+                                    <ActivityIndicator
+                                        color={globals.colors.foreground}
+                                        size="large"
+                                    />
+                                </View>
+                            );
+                        }}
+                    />
+                    <View
+                        style={{
+                            bottom: globals.app.width / 42,
+                            right: globals.app.width / 42,
+                            position: "absolute"
+                        }}>
+                        {showTopButton && (
+                            <RoundButton
+                                iconName="arrow-upward"
+                                backgroundColor={selectMode ? "#b32d48" : "#2d2db3"}
+                                onPress={scrollToTop}
+                            />
+                        )}
+                        {!selectMode && (
+                            <RoundButton
+                                iconName="delete-sweep"
+                                backgroundColor="#2d60b3"
+                                onPress={() => {
+                                    const CustomAlert = (message, buttons, options) => {
+                                        Alert.alert(
+                                            "Remover rapidamente",
+                                            message,
+                                            buttons,
+                                            options
+                                        );
+                                    };
+
+                                    CustomAlert(
+                                        "Feriados nacionais não inclusos.\nQuais eventos deseja remover?",
+                                        [
+                                            { text: "Nenhum" },
+                                            {
+                                                text: "Passados",
+                                                onPress: async () => {
+                                                    const events = await getData("events", true);
+                                                    if (events && events.length > 0) {
+                                                        let tempData = [...events].filter((event) => new Date(event.endDate) < date);
+                                                        if (tempData && tempData.length > 0) {
+                                                            tempData = [...events].filter((event) => new Date(event.endDate) >= date);
+                                                            if (tempData.length == 0) removeData("events");
+                                                            else storeData("events", tempData, true);
+                                                            fetchData();
+                                                        }
+                                                        else CustomAlert("Não há eventos para se remover.");
+                                                    }
+                                                    else CustomAlert("Não há eventos para se remover.");
+                                                }
+                                            },
+                                            {
+                                                text: "Todos",
+                                                onPress: async () => {
+                                                    const events = await getData("events", true);
+                                                    if (events && events.length > 0) {
+                                                        removeData("events");
+                                                        fetchData();
+                                                    }
+                                                    else CustomAlert("Não há eventos para se remover.");
+                                                }
+                                            }
+                                        ],
+                                        { cancelable: true }
                                     );
                                 }}
                             />
-                        </View>
-                    );
-                }}
-                ListFooterComponent={() => {
-                    if (loading) return (
-                        <View
-                            style={{
-                                marginTop: globals.app.width / 30,
-                                justifyContent: "center",
-                                alignItems: "center",
-                                flex: 1
-                            }}>
-                            <ActivityIndicator
-                                color={globals.colors.foreground}
-                                size="large"
-                            />
-                        </View>
-                    );
-                }}
-            />
-            <View
-                style={{
-                    bottom: globals.app.width / 42,
-                    right: globals.app.width / 42,
-                    position: "absolute"
-                }}>
-                {showTopButton && (
-                    <RoundButton
-                        iconName="arrow-upward"
-                        backgroundColor={selectMode ? "#b32d48" : "#2d2db3"}
-                        onPress={scrollToTop}
-                    />
-                )}
-                {!selectMode && (
-                    <RoundButton
-                        iconName="delete-sweep"
-                        backgroundColor="#2d60b3"
-                        onPress={() => {
-                            const CustomAlert = (message, buttons, options) => {
-                                Alert.alert(
-                                    "Remover rapidamente",
-                                    message,
-                                    buttons,
-                                    options
-                                );
-                            };
-
-                            CustomAlert(
-                                "Feriados nacionais não inclusos.\nQuais eventos deseja remover?",
-                                [
-                                    { text: "Nenhum" },
-                                    {
-                                        text: "Passados",
-                                        onPress: async () => {
-                                            const events = await getData("events", true);
-                                            if (events && events.length > 0) {
-                                                let tempData = [...events].filter((event) => new Date(event.endDate) < date);
-                                                if (tempData && tempData.length > 0) {
-                                                    tempData = [...events].filter((event) => new Date(event.endDate) >= date);
-                                                    if (tempData.length == 0) removeData("events");
-                                                    else storeData("events", tempData, true);
-                                                    fetchData();
+                        )}
+                        {selectMode ? (
+                            <RoundButton
+                                iconName={"delete-forever"}
+                                backgroundColor={"#b3552d"}
+                                onPress={() => {
+                                    if (selectedItems.length > 0) Alert.alert(
+                                        "Remover selecionados",
+                                        "Você tem certeza disso?",
+                                        [
+                                            { text: "Cancelar" },
+                                            {
+                                                text: "Confirmar",
+                                                onPress: async () => {
+                                                    const events = await getData("events", true);
+                                                    if (events && events.length > 0) {
+                                                        const tempData = [...events].filter((event) => !selectedItems.includes(parseInt(event.id)));
+                                                        if (tempData.length == 0) removeData("events");
+                                                        else storeData("events", tempData, true);
+                                                        fetchData();
+                                                    }
+                                                    setSelectedItems([]);
+                                                    setSelectMode(false);
                                                 }
-                                                else CustomAlert("Não há eventos para se remover.");
                                             }
-                                            else CustomAlert("Não há eventos para se remover.");
-                                        }
-                                    },
-                                    {
-                                        text: "Todos",
-                                        onPress: async () => {
-                                            const events = await getData("events", true);
-                                            if (events && events.length > 0) {
-                                                removeData("events");
-                                                fetchData();
-                                            }
-                                            else CustomAlert("Não há eventos para se remover.");
-                                        }
-                                    }
-                                ],
-                                { cancelable: true }
-                            );
-                        }}
-                    />
-                )}
-                {selectMode ? (
-                    <RoundButton
-                        iconName={"delete-forever"}
-                        backgroundColor={"#b3552d"}
-                        onPress={() => {
-                            if (selectedItems.length > 0) Alert.alert(
-                                "Remover selecionados",
-                                "Você tem certeza disso?",
-                                [
-                                    { text: "Cancelar" },
-                                    {
-                                        text: "Confirmar",
-                                        onPress: async () => {
-                                            const events = await getData("events", true);
-                                            if (events && events.length > 0) {
-                                                const tempData = [...events].filter((event) => !selectedItems.includes(parseInt(event.id)));
-                                                if (tempData.length == 0) removeData("events");
-                                                else storeData("events", tempData, true);
-                                                fetchData();
-                                            }
-                                            setSelectedItems([]);
-                                            setSelectMode(false);
-                                        }
-                                    }
-                                ],
-                                { cancelable: true }
-                            );
-                            else {
-                                setSelectMode(false);
-                                setSelectedItems([]);
-                            };
-                        }}
-                    />
-                ) : (
-                    <RoundButton
-                        iconName={"delete"}
-                        backgroundColor={"#2db3aa"}
-                        onPress={() => setSelectMode(true)}
-                    />
-                )}
-                <RoundButton
-                    iconName={selectMode ? "clear" : "dashboard-customize"}
-                    backgroundColor={selectMode ? "#b3772d" : "#2db367"}
-                    onPress={() => {
-                        if (selectMode) {
-                            setSelectMode(false);
-                            setSelectedItems([]);
-                        }
-                        else navigateToScreen(navigation, "FormScreen");
-                    }}
-                />
-            </View>
-        </View >
+                                        ],
+                                        { cancelable: true }
+                                    );
+                                    else {
+                                        setSelectMode(false);
+                                        setSelectedItems([]);
+                                    };
+                                }}
+                            />
+                        ) : (
+                            <RoundButton
+                                iconName={"delete"}
+                                backgroundColor={"#2db3aa"}
+                                onPress={() => setSelectMode(true)}
+                            />
+                        )}
+                        <RoundButton
+                            iconName={selectMode ? "clear" : "dashboard-customize"}
+                            backgroundColor={selectMode ? "#b3772d" : "#2db367"}
+                            onPress={() => {
+                                if (selectMode) {
+                                    setSelectMode(false);
+                                    setSelectedItems([]);
+                                }
+                                else if (navigation.isFocused()) navigateToScreen(navigation, "FormScreen");
+                            }}
+                        />
+                    </View>
+                </>
+            )}
+        </View>
     )
 };
 
