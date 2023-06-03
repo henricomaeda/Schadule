@@ -59,14 +59,7 @@ const FormScreen = ({ navigation, route }) => {
 
     // Define default variables to drop down picker.
     const [open, setOpen] = React.useState(false);
-    const [categories, setCategories] = React.useState([
-        { label: "Lembrete", value: "Reminder" },
-        { label: "Aniversário", value: "Birthday" },
-        { label: "Trabalho", value: "Business" },
-        { label: "Acadêmico", value: "Academic" },
-        { label: "Relacionamento", value: "Relationship" },
-        { label: "Medicina", value: "Medicine" }
-    ]);
+    const [categories, setCategories] = React.useState(globals.categories);
 
     // Define default variables to date time picker.
     const [showDatePicker, setShowDatePicker] = React.useState(false);
