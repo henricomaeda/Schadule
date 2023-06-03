@@ -165,7 +165,7 @@ const FormScreen = ({ navigation, route }) => {
             }}>
             <View
                 style={{
-                    marginRight: globals.app.width / 42,
+                    marginRight: globals.app.width / 62,
                     justifyContent: "center",
                     alignItems: "center",
                     flex: 0
@@ -173,11 +173,11 @@ const FormScreen = ({ navigation, route }) => {
                 <Icon
                     name="check"
                     color={globals.colors.placeholder}
-                    size={globals.app.width / 16}
+                    size={globals.app.width / 20}
                     style={{
                         backgroundColor: value ? globals.colors.foreground : globals.colors.placeholder,
                         borderRadius: globals.app.circle,
-                        padding: globals.app.width / 92,
+                        padding: globals.app.width / 120,
                     }}
                 />
             </View>
@@ -432,7 +432,15 @@ const FormScreen = ({ navigation, route }) => {
                             </TouchableOpacity>
                         </View>
                     </View>
-                    <View style={styles.container}>
+                    <View
+                        style={[styles.container, {
+                            justifyContent: "space-between",
+                            flexDirection: "row",
+                            alignItems: "center",
+                            overflow: "hidden"
+                        }]}>
+                        {CheckBox("Anualmente", annually, () => setAnnually(!annually))}
+                        {CheckBox("Notificar-me", notify, () => setNotify(!notify))}
                         {CheckBox("Dia inteiro", allDay, () => {
                             const newValue = !allDay;
                             setAllDay(newValue);
@@ -446,8 +454,6 @@ const FormScreen = ({ navigation, route }) => {
                                 setEndDate(newEndDate);
                             };
                         })}
-                        {CheckBox("Anualmente", annually, () => setAnnually(!annually))}
-                        {CheckBox("Notificar-me", notify, () => setNotify(!notify))}
                     </View>
                     <View style={{ marginBottom: globals.app.width / 42 }}>
                         <Text style={styles.label}>
