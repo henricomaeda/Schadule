@@ -75,13 +75,9 @@ const createNotificationChannel = channelId => {
 };
 
 // Schedules a local notification.
-export const scheduleNotification = (title, categoryValue, date, isTeenMinutesLater = false) => {
+export const scheduleNotification = (title, categoryValue, trigger, isTeenMinutesLater = false) => {
     try {
         const message = isTeenMinutesLater ? "Acontecerá em 10 minutes!" : "Acontecendo agora!";
-        const trigger = new Date(date);
-        trigger.setMilliseconds(0);
-        const moreSeconds = trigger.getSeconds() + 2;
-        if (trigger <= new Date()) trigger.setSeconds(moreSeconds);
         const category = globals.categories.find(category => category.value === categoryValue)
         PushNotification.localNotificationSchedule({
             importance: "high",

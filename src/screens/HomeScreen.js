@@ -76,11 +76,12 @@ const HomeScreen = ({ isMenuOpen, setIsMenuOpen, navigation }) => {
                 if (newItem.notify && newDate > now) {
                     scheduleNotification(newItem.name.trim(), newItem.category.trim(), newItem.startDate);
 
-                    // If the event is teen minutes before now, notify before.
                     now.setSeconds(0);
                     newDate.setSeconds(0);
                     newDate.setMinutes(newDate.getMinutes() - 10);
-                    const isTeenMinutesLater = newDate >= now;
+
+                    // If the event is teen minutes later than now, notify before.
+                    const isTeenMinutesLater = newDate > now;
                     if (isTeenMinutesLater) scheduleNotification(newItem.name.trim(), newItem.category.trim(), newDate, true);
                 };
 
@@ -123,9 +124,9 @@ const HomeScreen = ({ isMenuOpen, setIsMenuOpen, navigation }) => {
                 else result[2].items.push(item);
                 return result;
             }, [
-                { category: "Acontecendo agora", show: showPresent, setShow: setShowPresent, items: [] },
-                { category: "Acontecerá", show: showFuture, setShow: setShowFuture, items: [] },
-                { category: "Aconteceu", show: showPast, setShow: setShowPast, items: [] },
+                { category: "Acontecendo agora", items: [] },
+                { category: "Acontecerá", items: [] },
+                { category: "Aconteceu", items: [] },
             ]);
             setData([...transformedData]);
             setLoading(false);
@@ -432,8 +433,12 @@ const HomeScreen = ({ isMenuOpen, setIsMenuOpen, navigation }) => {
                             </>
                         )}
                         renderItem={({ item }) => {
-                            const showItems = item.show;
                             const category = item.category;
+                            const getShowItems = () => {
+                                if (category === "Acontecendo agora") return showPresent;
+                                else if (category === "Acontecerá") return showFuture;
+                                return showPast;
+                            }
 
                             let length = 0;
                             if (!showHolidays || selectMode) length = item.items.filter(item => item.category !== "Holiday").length;
@@ -443,7 +448,11 @@ const HomeScreen = ({ isMenuOpen, setIsMenuOpen, navigation }) => {
                                 <View style={{ flex: 1 }}>
                                     {(showCategories && !selectMode) && (
                                         <TouchableOpacity
-                                            onPress={() => item.setShow(previousValue => !previousValue)}
+                                            onPress={() => {
+                                                if (category === "Acontecendo agora") setShowPresent(!showPresent);
+                                                else if (category === "Acontecerá") setShowFuture(!showFuture);
+                                                else setShowPast(!showPast);
+                                            }}
                                             style={{
                                                 backgroundColor: globals.colors.midground,
                                                 borderRadius: globals.app.width / 32,
@@ -487,7 +496,7 @@ const HomeScreen = ({ isMenuOpen, setIsMenuOpen, navigation }) => {
                                     <FlatList
                                         data={item.items}
                                         renderItem={({ item }) => {
-                                            if (!selectMode && !showItems && showCategories) return;
+                                            if (!selectMode && !getShowItems() && showCategories) return;
                                             if (selectMode && item.category === "Holiday") return;
                                             if (!showHolidays && item.category === "Holiday") return;
                                             const startTime = `${formatTime(item.startDate.getHours())}:${formatTime(item.startDate.getMinutes())}`;
