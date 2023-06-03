@@ -206,6 +206,8 @@ const FormScreen = ({ navigation, route }) => {
     // Define a reference to the flatlist.
     const scrollViewRef = React.useRef(null);
     const saveEvent = () => {
+        startDate.setMilliseconds(0);
+        endDate.setMilliseconds(0);
         try {
             if (id === -1) events.push({
                 id: generateUniqueId(events),

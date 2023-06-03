@@ -63,17 +63,22 @@ const HomeScreen = ({ isMenuOpen, setIsMenuOpen, navigation }) => {
                     newItem.endDate = increaseYear(newItem.endDate);
                 };
 
+                const now = new Date();
+                const newDate = new Date(newItem.startDate);
+
+                now.setMilliseconds(0);
+                newDate.setMilliseconds(0);
+
                 // Schedule this event and notify the user if do.
-                if (newItem.notify) {
+                if (newItem.notify && newDate > now) {
                     scheduleNotification(newItem.name.trim(), newItem.category.trim(), newItem.startDate);
 
                     // If the event is teen minutes before now, notify before.
-                    const now = new Date();
-                    now.setMilliseconds(0);
-                    const newDate = newItem.startDate;
-                    newDate.setMilliseconds(0);
+                    now.setSeconds(0);
+                    newDate.setSeconds(0);
                     newDate.setMinutes(newDate.getMinutes() - 10);
-                    if (newDate >= now) scheduleNotification(newItem.name.trim(), newItem.category.trim(), newDate, true);
+                    const isTeenMinutesLater = newDate >= now;
+                    if (isTeenMinutesLater) scheduleNotification(newItem.name.trim(), newItem.category.trim(), newDate, true);
                 };
 
                 data.push(newItem);
