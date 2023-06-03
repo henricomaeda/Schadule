@@ -1,18 +1,17 @@
+import { getData, removeData, storeData } from "../utils/DataStorage";
 import Icon from "react-native-vector-icons/MaterialIcons";
+import { navigateToHome } from "../utils/Navigation";
 import { globals } from "../Globals";
 import * as React from "react";
 import {
     TouchableOpacity,
     ScrollView,
+    Clipboard,
     Text,
     View,
-    TextInput,
     Alert,
-    Keyboard,
-    Clipboard
+    TextInput
 } from "react-native";
-import { getData, removeData, storeData } from "../utils/DataStorage";
-import { navigateToHome } from "../utils/Navigation";
 
 const DataScreen = ({ navigation }) => {
     const [events, setEvents] = React.useState("");
@@ -176,9 +175,10 @@ const DataScreen = ({ navigation }) => {
                                         const endDate = isValid(item, "endDate") && !isNaN(new Date(item.endDate).getTime());
                                         const annually = isValid(item, "annually") && typeof Boolean(item.annually) === "boolean";
                                         const allDay = isValid(item, "allDay") && typeof Boolean(item.allDay) === "boolean";
+                                        const notify = isValid(item, "notify") && typeof Boolean(item.notify) === "boolean";
                                         const category = isValid(item, "category");
                                         const description = isValid(item, "description");
-                                        if (id && name && address && startDate && endDate && annually && allDay && category && description) {
+                                        if (id && name && address && startDate && endDate && annually && allDay && category && description && notify) {
                                             const datesEqual = new Date(item.startDate) <= new Date(item.endDate);
                                             const datesValid = new Date(item.startDate).getFullYear() === new Date(item.endDate).getFullYear();
                                             if (datesEqual && datesValid) return true;
