@@ -56,5 +56,13 @@ export const globals = {
         "Quinta-feira",
         "Sexta-feira",
         "Sábado",
+    ],
+    categories: [
+        { label: "Lembrete", value: "Reminder" },
+        { label: "Aniversário", value: "Birthday" },
+        { label: "Trabalho", value: "Business" },
+        { label: "Acadêmico", value: "Academic" },
+        { label: "Relacionamento", value: "Relationship" },
+        { label: "Medicina", value: "Medicine" }
     ]
 };
