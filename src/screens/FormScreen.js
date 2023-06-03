@@ -11,6 +11,7 @@ import * as React from "react";
 import {
     ScrollView,
     StyleSheet,
+    Keyboard,
     Image,
     View,
     Text,
@@ -137,6 +138,7 @@ const FormScreen = ({ navigation, route }) => {
     const CustomTouchableOpacity = (label, value, backgroundColor) => (
         <TouchableOpacity
             onPress={() => {
+                Keyboard.dismiss();
                 setCategory(value);
                 setOpen(false);
             }}
@@ -159,7 +161,10 @@ const FormScreen = ({ navigation, route }) => {
     // Create a custom checkbox with more properties.
     const CheckBox = (name, value, onPress) => (
         <TouchableOpacity
-            onPress={onPress}
+            onPress={() => {
+                Keyboard.dismiss();
+                onPress();
+            }}
             style={{
                 marginTop: globals.app.width / 62,
                 flexDirection: "row",
@@ -391,6 +396,7 @@ const FormScreen = ({ navigation, route }) => {
                             <TouchableOpacity
                                 onPress={() => {
                                     setOpen(false);
+                                    Keyboard.dismiss();
                                     setShowDatePicker(true);
                                 }}
                                 style={{
@@ -413,6 +419,7 @@ const FormScreen = ({ navigation, route }) => {
                             <TouchableOpacity
                                 onPress={() => {
                                     setOpen(false);
+                                    Keyboard.dismiss();
                                     if (!allDay) setShowStartTimePicker(true);
                                 }}
                                 style={styles.timeContainer}>
@@ -428,6 +435,7 @@ const FormScreen = ({ navigation, route }) => {
                             <TouchableOpacity
                                 onPress={() => {
                                     setOpen(false);
+                                    Keyboard.dismiss();
                                     if (!allDay) setShowEndTimePicker(true);
                                 }}
                                 style={styles.timeContainer}>
@@ -468,7 +476,10 @@ const FormScreen = ({ navigation, route }) => {
                             open={open}
                             value={category}
                             items={categories}
-                            setOpen={setOpen}
+                            setOpen={() => {
+                                Keyboard.dismiss();
+                                setOpen(previousValue => !previousValue);
+                            }}
                             setValue={setCategory}
                             setItems={setCategories}
                             theme="DARK"
