@@ -60,7 +60,7 @@ const FormScreen = ({ navigation, route }) => {
 
     // Define default variables to drop down picker.
     const [open, setOpen] = React.useState(false);
-    const [categories, setCategories] = React.useState(globals.categories);
+    const categories = globals.categories;
 
     // Define default variables to date time picker.
     const [showDatePicker, setShowDatePicker] = React.useState(false);
@@ -474,21 +474,22 @@ const FormScreen = ({ navigation, route }) => {
                         </Text>
                         <DropDownPicker
                             open={open}
-                            value={category}
-                            items={categories}
                             setOpen={() => {
                                 Keyboard.dismiss();
                                 setOpen(previousValue => !previousValue);
                             }}
+                            value={category}
                             setValue={setCategory}
-                            setItems={setCategories}
+                            items={categories}
                             theme="DARK"
+                            listMode="SCROLLVIEW"
                             textStyle={[styles.timeInput, { textAlign: "auto" }]}
                             dropDownContainerStyle={{
                                 backgroundColor: globals.colors.background,
                                 borderColor: globals.colors.midground,
                                 borderWidth: globals.app.width / 102,
-                                elevation: 6
+                                elevation: 6,
+                                zIndex: 2
                             }}
                             style={{
                                 backgroundColor: globals.colors.midground,
