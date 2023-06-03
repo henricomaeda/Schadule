@@ -9,13 +9,17 @@ import com.facebook.react.ReactNativeHost;
 import com.facebook.react.ReactPackage;
 import com.facebook.react.config.ReactFeatureFlags;
 import com.facebook.soloader.SoLoader;
-import com.BV.LinearGradient.LinearGradientPackage;
 import com.schadule.newarchitecture.MainApplicationReactNativeHost;
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 
-public class MainApplication extends Application implements ReactApplication {
+// Linear gradient configuration.
+import com.BV.LinearGradient.LinearGradientPackage;
 
+// Notifications configuration.
+import com.dieam.reactnativepushnotification.ReactNativePushNotificationPackage;
+
+public class MainApplication extends Application implements ReactApplication {
   private final ReactNativeHost mReactNativeHost =
       new ReactNativeHost(this) {
         @Override
@@ -27,9 +31,13 @@ public class MainApplication extends Application implements ReactApplication {
         protected List<ReactPackage> getPackages() {
           @SuppressWarnings("UnnecessaryLocalVariable")
           List<ReactPackage> packages = new PackageList(this).getPackages();
-          // Packages that cannot be autolinked yet can be added manually here, for example:
-          // packages.add(new MyReactNativePackage());
+
+          // Linear gradient configuration.
           packages.add(new LinearGradientPackage());
+
+          // Notifications configuration.
+          // packages.add(new ReactNativePushNotificationPackage());
+
           return packages;
         }
 

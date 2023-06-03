@@ -1,10 +1,12 @@
 apply plugin: "com.android.application"
 
+// Icons configuration.
 project.ext.vectoricons = [
-    iconFontNames: [ 'MaterialIcons.ttf', 'EvilIcons.ttf' ] // Name of the font files you want to copy
+    iconFontNames: [ 'MaterialIcons.ttf', 'EvilIcons.ttf' ]
 ]
 apply from: "../../node_modules/react-native-vector-icons/fonts.gradle"
 
+// Icons and notications configuration.
 import com.android.build.OutputFile
 
 /**
@@ -82,9 +84,9 @@ import com.android.build.OutputFile
  * ]
  */
 
-project.ext.react = [
-    enableHermes: false,  // clean and rebuild if changing
-]
+// Clean and rebuild if changing.
+// This must be disabled when APKed.
+project.ext.react = [ enableHermes: false ]
 
 apply from: "../../node_modules/react-native/react.gradle"
 
@@ -145,6 +147,9 @@ android {
         versionCode 1
         versionName "1.0"
         buildConfigField "boolean", "IS_NEW_ARCHITECTURE_ENABLED", isNewArchitectureEnabled().toString()
+
+        // Notications configuration.
+        manifestPlaceholders = ["appPackageName": "schadule"]
 
         if (isNewArchitectureEnabled()) {
             // We configure the NDK build only if you decide to opt-in for the New Architecture.
@@ -264,8 +269,11 @@ dependencies {
     implementation fileTree(dir: "libs", include: ["*.jar"])
     implementation project(':react-native-linear-gradient')
 
-    //noinspection GradleDynamicVersion
-    implementation "com.facebook.react:react-native:+"  // From node_modules
+    // Notifications configuration.
+    implementation project(':react-native-push-notification')
+
+    // noinspection GradleDynamicVersion
+    implementation "com.facebook.react:react-native:+" // From node_modules
     implementation "androidx.swiperefreshlayout:swiperefreshlayout:1.0.0"
 
     debugImplementation("com.facebook.flipper:flipper:${FLIPPER_VERSION}") {
@@ -282,7 +290,7 @@ dependencies {
     }
 
     if (enableHermes) {
-        //noinspection GradleDynamicVersion
+        // noinspection GradleDynamicVersion
         implementation("com.facebook.react:hermes-engine:+") { // From node_modules
             exclude group:'com.facebook.fbjni'
         }

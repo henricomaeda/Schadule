@@ -4,8 +4,13 @@ import android.os.Bundle;
 import com.facebook.react.ReactActivity;
 import com.facebook.react.ReactActivityDelegate;
 import com.facebook.react.ReactRootView;
+import com.dieam.reactnativepushnotification.ReactNativePushNotificationPackage;
+import com.facebook.react.ReactInstanceManager;
+import com.facebook.react.bridge.ReactContext;
+import com.facebook.react.modules.core.DeviceEventManagerModule;
 
 public class MainActivity extends ReactActivity {
+  // Icons configuration.
   @Override
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(null);

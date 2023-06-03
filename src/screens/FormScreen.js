@@ -26,6 +26,7 @@ const FormScreen = ({ navigation, route }) => {
     const [endDate, setEndDate] = React.useState(new Date());
     const [annually, setAnnually] = React.useState(false);
     const [allDay, setAllDay] = React.useState(false);
+    const [notify, setNotify] = React.useState(true);
     const [category, setCategory] = React.useState("Reminder");
     const [description, setDescription] = React.useState("");
     const [required, setRequired] = React.useState(false);
@@ -158,6 +159,7 @@ const FormScreen = ({ navigation, route }) => {
         <TouchableOpacity
             onPress={onPress}
             style={{
+                marginTop: globals.app.width / 62,
                 flexDirection: "row",
                 alignItems: "center"
             }}>
@@ -204,6 +206,7 @@ const FormScreen = ({ navigation, route }) => {
                 endDate: endDate,
                 annually: annually,
                 allDay: allDay,
+                notify: notify,
                 category: category.trim(),
                 description: description.trim()
             });
@@ -215,6 +218,7 @@ const FormScreen = ({ navigation, route }) => {
                 events[eventIndex].endDate = endDate;
                 events[eventIndex].annually = annually;
                 events[eventIndex].allDay = allDay;
+                events[eventIndex].notify = notify;
                 events[eventIndex].category = category.trim();
                 events[eventIndex].description = description.trim();
             };
@@ -372,7 +376,6 @@ const FormScreen = ({ navigation, route }) => {
                     {CustomTextInput(address, setAddress, "Local do evento", "Entre com a localidade do evento")}
                     <View
                         style={{
-                            marginBottom: globals.app.width / 42,
                             justifyContent: "space-between",
                             flexDirection: "row"
                         }}>
@@ -394,7 +397,7 @@ const FormScreen = ({ navigation, route }) => {
                                     width: globals.app.width / 2.36,
                                 }}>
                                 <Text style={styles.timeInput}>
-                                    {startDate.getDate()}/{globals.months[startDate.getMonth()].toLowerCase()}/{startDate.getFullYear()}
+                                    {formatTime(startDate.getDate())}/{globals.months[startDate.getMonth()].toLowerCase()}/{startDate.getFullYear()}
                                 </Text>
                             </TouchableOpacity>
                         </View>
@@ -429,12 +432,7 @@ const FormScreen = ({ navigation, route }) => {
                             </TouchableOpacity>
                         </View>
                     </View>
-                    <View
-                        style={[styles.container, {
-                            justifyContent: "space-evenly",
-                            flexDirection: "row"
-                        }]}>
-                        {CheckBox("Anualmente", annually, () => setAnnually(!annually))}
+                    <View style={styles.container}>
                         {CheckBox("Dia inteiro", allDay, () => {
                             const newValue = !allDay;
                             setAllDay(newValue);
@@ -448,6 +446,8 @@ const FormScreen = ({ navigation, route }) => {
                                 setEndDate(newEndDate);
                             };
                         })}
+                        {CheckBox("Anualmente", annually, () => setAnnually(!annually))}
+                        {CheckBox("Notificar-me", notify, () => setNotify(!notify))}
                     </View>
                     <View style={{ marginBottom: globals.app.width / 42 }}>
                         <Text style={styles.label}>

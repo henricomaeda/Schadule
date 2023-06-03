@@ -1,4 +1,5 @@
 // Import necessary modules and dependencies.
+import { setupNotifications, scheduleNotification } from "../utils/Notification";
 import { formatTime, formatDate, generateUniqueId } from "../utils/Functions";
 import { getData, removeData, storeData } from "../utils/DataStorage";
 import { navigateToScreen, replaceRoute } from "../utils/Navigation";
@@ -41,6 +42,7 @@ const HomeScreen = ({ isMenuOpen, setIsMenuOpen, navigation }) => {
                 return newDate;
             };
 
+            setupNotifications();
             const tempEvents = await getData("events", true);
             if (tempEvents && tempEvents.length > 0) tempEvents.forEach(item => {
                 const newItem = {
@@ -49,13 +51,27 @@ const HomeScreen = ({ isMenuOpen, setIsMenuOpen, navigation }) => {
                     startDate: new Date(item.startDate),
                     endDate: new Date(item.endDate),
                     annually: Boolean(item.annually),
-                    allDay: Boolean(item.allDay)
+                    allDay: Boolean(item.allDay),
+                    notify: Boolean(item.notify)
                 };
 
+                // Verify if is annually and is past.
                 if (newItem.annually && newItem.endDate < date) {
                     newItem.startDate = increaseYear(newItem.startDate);
                     newItem.endDate = increaseYear(newItem.endDate);
-                }
+                };
+
+                // Schedule this event and notify the user if do.
+                if (newItem.notify) {
+                    scheduleNotification(newItem.name.trim(), newItem.category.trim(), newItem.startDate);
+
+                    // If the event is teen minutes before now, notify before.
+                    const now = new Date().setMilliseconds(0);
+                    const newDate = newItem.startDate.setMilliseconds(0);
+                    newDate.setMinutes(newDate.getMinutes() - 10);
+                    const isLater = newDate >= now;
+                    if (isLater) scheduleNotification(newItem.name.trim(), newItem.category.trim(), newDate, true);
+                };
 
                 data.push(newItem);
             });
@@ -79,6 +95,7 @@ const HomeScreen = ({ isMenuOpen, setIsMenuOpen, navigation }) => {
                     endDate: formatDate(item.date, false),
                     annually: false,
                     allDay: true,
+                    notify: false,
                     category: "Holiday",
                     description: "Feriado nacional."
                 };
