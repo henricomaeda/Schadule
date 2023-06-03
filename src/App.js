@@ -41,7 +41,7 @@ export default function App() {
               onPress={() => navigateToHome(navigation)}>
               <Icon
                 color={globals.colors.placeholder}
-                size={globals.app.width / 18.2}
+                size={globals.app.width / 16.2}
                 name="arrow-back"
               />
             </TouchableOpacity>
@@ -63,7 +63,7 @@ export default function App() {
                 }}>
                 <Icon
                   color={globals.colors.placeholder}
-                  size={globals.app.width / 18}
+                  size={globals.app.width / 16}
                   name="cached"
                 />
               </TouchableOpacity>
@@ -72,7 +72,7 @@ export default function App() {
                   style={{ marginLeft: globals.app.width / 42 }}>
                   <Icon
                     color={globals.colors.placeholder}
-                    size={globals.app.width / 18}
+                    size={globals.app.width / 16}
                     name="more-vert"
                   />
                 </TouchableOpacity>
