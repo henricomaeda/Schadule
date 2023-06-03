@@ -1,3 +1,4 @@
+// Import necessary modules and dependencies.
 import { getData, removeData, storeData } from "../utils/DataStorage";
 import Icon from "react-native-vector-icons/MaterialIcons";
 import { navigateToHome } from "../utils/Navigation";
@@ -15,6 +16,8 @@ import {
 
 const DataScreen = ({ navigation }) => {
     const [events, setEvents] = React.useState("");
+
+    // Define a custom button with more properties.
     const CustomButton = ({ iconName, name, onPress }) => (
         <TouchableOpacity
             onPress={onPress}
@@ -46,6 +49,7 @@ const DataScreen = ({ navigation }) => {
         </TouchableOpacity>
     );
 
+    // Create a function that verify if a text data is a JSON.
     const handleJSON = data => {
         try {
             const json = JSON.parse(data);
@@ -60,6 +64,7 @@ const DataScreen = ({ navigation }) => {
         };
     };
 
+    // Define a constructor function that get user's data.
     React.useEffect(() => {
         const fetchData = async () => {
             const data = await getData("events");
@@ -68,6 +73,7 @@ const DataScreen = ({ navigation }) => {
         fetchData();
     }, []);
 
+    // Create a custom alert that optimizes the process.
     const customAlert = (message = "", onPress = null) => Alert.alert(
         "Data Manager",
         message,
@@ -81,6 +87,7 @@ const DataScreen = ({ navigation }) => {
         { cancelable: true }
     );
 
+    // Returns the component.
     return (
         <ScrollView
             contentContainerStyle={{
@@ -230,4 +237,5 @@ const DataScreen = ({ navigation }) => {
     );
 };
 
+// Export the component.
 export default DataScreen;

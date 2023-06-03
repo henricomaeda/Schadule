@@ -1,4 +1,6 @@
+// Import necessary modules and dependencies.
 import { navigateToHome } from "../utils/Navigation";
+import RoundButton from "../components/RoundButton";
 import { globals } from "../Globals";
 import * as React from "react";
 import {
@@ -9,10 +11,10 @@ import {
     View,
     Linking
 } from "react-native";
-import RoundButton from "../components/RoundButton";
 
 const DetailsScreen = ({ navigation }) => {
-    const CustomLabel = ({ title, subtitle = "", description, source = null, onPress = null }) => {
+    // Define a custom button that navigate to somewhere.
+    const CustomButton = ({ title, subtitle = "", description, source = null, onPress = null }) => {
         return (
             <TouchableOpacity
                 onPress={onPress}
@@ -70,6 +72,7 @@ const DetailsScreen = ({ navigation }) => {
         );
     };
 
+    // Returns the component.
     return (
         <View style={{ flex: 1 }}>
             <ScrollView
@@ -77,32 +80,32 @@ const DetailsScreen = ({ navigation }) => {
                     padding: globals.app.width / 20,
                     flexGrow: 1
                 }}>
-                <CustomLabel
+                <CustomButton
                     title="Schadule"
                     subtitle="Schedule + Shade"
                     description="Mistura de agenda com sombra"
                     source={require("../assets/Icon.png")}
                     onPress={() => navigateToHome(navigation)}
                 />
-                <CustomLabel
+                <CustomButton
                     title="Designer"
                     description="Ícones desenvolvidos por Freepik"
                     source={require("../assets/Freepik.jpg")}
                     onPress={() => Linking.openURL("https://www.flaticon.com/authors/freepik")}
                 />
-                <CustomLabel
+                <CustomButton
                     title="API"
                     description="Feriados nacionais por Brasil API"
                     source={require("../assets/BrasilAPI.jpg")}
                     onPress={() => Linking.openURL("https://brasilapi.com.br")}
                 />
-                <CustomLabel
+                <CustomButton
                     title="Open source"
                     description="Projeto disponível no GitHub"
                     source={require("../assets/GitHub.png")}
                     onPress={() => Linking.openURL("https://github.com/henricomaeda/Schadule")}
                 />
-                <CustomLabel
+                <CustomButton
                     title="React native"
                     description="Aplicativo feito por Henrico Maeda"
                     source={require("../assets/ReactNative.png")}

@@ -56,6 +56,7 @@ const FormScreen = ({ navigation, route }) => {
         fetchData();
     }, [id]);
 
+    // Define default variables to drop down picker.
     const [open, setOpen] = React.useState(false);
     const [categories, setCategories] = React.useState([
         { label: "Lembrete", value: "Reminder" },
@@ -66,7 +67,12 @@ const FormScreen = ({ navigation, route }) => {
         { label: "Medicina", value: "Medicine" }
     ]);
 
+    // Define default variables to date time picker.
     const [showDatePicker, setShowDatePicker] = React.useState(false);
+    const [showStartTimePicker, setShowStartTimePicker] = React.useState(false);
+    const [showEndTimePicker, setShowEndTimePicker] = React.useState(false);
+
+    // Define a function to update date.
     const handleDateChange = (date) => {
         const year = date.getFullYear();
         const month = date.getMonth();
@@ -78,8 +84,7 @@ const FormScreen = ({ navigation, route }) => {
         setEndDate(newEndDate);
     };
 
-    const [showStartTimePicker, setShowStartTimePicker] = React.useState(false);
-    const [showEndTimePicker, setShowEndTimePicker] = React.useState(false);
+    // Define a function to update start and end time.
     const handleTimeChange = (date, start = true) => {
         if (start) {
             setShowStartTimePicker(false);
@@ -93,6 +98,7 @@ const FormScreen = ({ navigation, route }) => {
         }
     };
 
+    // Create a custom text input with more properties.
     const CustomTextInput = (value, setValue, label, placeholder, multiline = false, inputRequired = false) => (
         <View style={styles.container}>
             <Text style={styles.label}>
@@ -133,6 +139,7 @@ const FormScreen = ({ navigation, route }) => {
         </View>
     );
 
+    // Create a custom button with more properties.
     const CustomTouchableOpacity = (label, value, backgroundColor) => (
         <TouchableOpacity
             onPress={() => {
@@ -155,6 +162,7 @@ const FormScreen = ({ navigation, route }) => {
         </TouchableOpacity>
     );
 
+    // Create a custom checkbox with more properties.
     const CheckBox = (name, value, onPress) => (
         <TouchableOpacity
             onPress={onPress}
@@ -231,6 +239,7 @@ const FormScreen = ({ navigation, route }) => {
         }
     }
 
+    // Create a function to remove space in start and end of a text value.
     const onBlurInput = setValue => setValue(previousValue => previousValue.trim());
     return (
         <View style={{ flex: 1 }} onTouchEnd={open ? () => setOpen(false) : null}>
