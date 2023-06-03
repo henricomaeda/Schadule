@@ -1,9 +1,11 @@
 /**
- * @file dataStorage.js
+ * @file DataStorage.js
  * @desc This file provides functions to store, retrieve, and remove data from the AsyncStorage module.
  * AsyncStorage is a key-value storage system provided by React Native for persistent data storage.
  * Each function performs a specific operation on the stored data.
  */
+
+// Import the AsyncStorage module from react-native-async-storage.
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 /**

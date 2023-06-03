@@ -1,4 +1,9 @@
-// Import required global variables.
+/**
+ * @file Functions.js
+ * @desc Contains global functions.
+ */
+
+// Import global variables.
 import { globals } from "../Globals";
 
 /**

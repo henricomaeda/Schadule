@@ -1,5 +1,5 @@
 /**
- * @file navigation.js
+ * @file Navigation.js
  * @desc Contains navigation functions using react-navigation.
  */
 
