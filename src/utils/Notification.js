@@ -7,6 +7,7 @@
 import PushNotificationIOS from "@react-native-community/push-notification-ios";
 import PushNotification, { Importance } from "react-native-push-notification";
 import { Platform } from "react-native";
+import { globals } from "../Globals";
 
 // Must be outside of any component LifeCycle (componentDidMount or constructor).
 PushNotification.configure({
@@ -74,22 +75,23 @@ const createNotificationChannel = channelId => {
 };
 
 // Schedules a local notification.
-export const scheduleNotification = (title, subtitle, date, isTeenMinutesLater = false) => {
+export const scheduleNotification = (title, categoryValue, date, isTeenMinutesLater = false) => {
     try {
         const message = isTeenMinutesLater ? "Acontecerá em 10 minutes!" : "Acontecendo agora!";
         const trigger = new Date(date);
         trigger.setMilliseconds(0);
         const moreSeconds = trigger.getSeconds() + 2;
         if (trigger <= new Date()) trigger.setSeconds(moreSeconds);
+        const category = globals.categories.find(category => category.value === categoryValue)
         PushNotification.localNotificationSchedule({
             importance: "high",
             priority: "high",
-            date: date,
-            when: date,
+            date: trigger,
+            when: trigger,
             title: title,
             message: message,
             bigText: message,
-            subText: subtitle,
+            subText: category.label,
             channelId: "schadule-channel",
             invokeApp: true
         });
