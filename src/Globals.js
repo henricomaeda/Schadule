@@ -59,10 +59,23 @@ export const globals = {
     ],
     categories: [
         { label: "Lembrete", value: "Reminder" },
+        { label: "Fotografia", value: "Photography" },
         { label: "Aniversário", value: "Birthday" },
         { label: "Trabalho", value: "Business" },
         { label: "Acadêmico", value: "Academic" },
         { label: "Relacionamento", value: "Relationship" },
         { label: "Medicina", value: "Medicine" }
+    ],
+    status: [
+        { label: "Não definido", value: "Undefined" },
+        { label: "Contrato", value: "Contract" },
+        { label: "Agendado", value: "Scheduled" },
+        { label: "Fotografar", value: "Photograph" },
+        { label: "Em andamento", value: "In progress" },
+        { label: "Editando", value: "Editing photos" },
+        { label: "Revelar fotos", value: "Revelation" },
+        { label: "Fazer álbum", value: "Album" },
+        { label: "Finalizado", value: "Finished" },
+        { label: "Cancelado", value: "Canceled" }
     ]
 };

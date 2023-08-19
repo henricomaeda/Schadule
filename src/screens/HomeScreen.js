@@ -30,11 +30,12 @@ const HomeScreen = ({ isMenuOpen, setIsMenuOpen, navigation }) => {
     const [loading, setLoading] = React.useState(true);
     const [date, setDate] = React.useState(new Date());
     const [data, setData] = React.useState([]);
-    const [showHolidays, setShowHolidays] = React.useState(true);
+    const [showHolidays, setShowHolidays] = React.useState(false);
     const [showCategories, setShowCategories] = React.useState(true);
     const [failed, setFailed] = React.useState(false);
     const [showPresent, setShowPresent] = React.useState(true);
     const [showFuture, setShowFuture] = React.useState(true);
+    const [showLimite, setShowLimite] = React.useState(true);
     const [showPast, setShowPast] = React.useState(false);
 
     // Fetches data by retrieving holidays and transforming it.
@@ -55,6 +56,7 @@ const HomeScreen = ({ isMenuOpen, setIsMenuOpen, navigation }) => {
                     id: parseInt(item.id),
                     startDate: new Date(item.startDate),
                     endDate: new Date(item.endDate),
+                    limiteDate: new Date(item.limiteDate),
                     annually: Boolean(item.annually),
                     allDay: Boolean(item.allDay),
                     notify: Boolean(item.notify)
@@ -119,14 +121,17 @@ const HomeScreen = ({ isMenuOpen, setIsMenuOpen, navigation }) => {
 
             const sortedData = [...data].sort((a, b) => a.startDate - b.startDate);
             const transformedData = [...sortedData].reduce((result, item) => {
-                if (item.startDate <= date && date <= item.endDate) result[0].items.push(item);
+                if (item.category == "Photography" && ["Finished", "Canceled"].includes(item.status)) result[3].items.push(item);
+                else if (item.startDate <= date && date <= item.endDate) result[0].items.push(item);
                 else if (item.startDate > date) result[1].items.push(item);
-                else result[2].items.push(item);
+                else if (item.category == "Photography") result[2].items.push(item);
+                else result[3].items.push(item);
                 return result;
             }, [
                 { category: "Acontecendo agora", items: [] },
                 { category: "Acontecerá", items: [] },
-                { category: "Aconteceu", items: [] },
+                { category: "Prazo", items: [] },
+                { category: "Aconteceu", items: [] }
             ]);
             setData([...transformedData]);
             setLoading(false);
@@ -437,13 +442,15 @@ const HomeScreen = ({ isMenuOpen, setIsMenuOpen, navigation }) => {
                             const getShowItems = () => {
                                 if (category === "Acontecendo agora") return showPresent;
                                 else if (category === "Acontecerá") return showFuture;
+                                else if (category === "Prazo") return showLimite;
                                 return showPast;
                             }
 
                             let length = 0;
                             if (!showHolidays || selectMode) length = item.items.filter(item => item.category !== "Holiday").length;
                             else length = item.items.length;
-
+                            
+                            const sortedItems = category == "Prazo" ? item.items.sort((a, b) => new Date(a.limiteDate) - new Date(b.limiteDate)) : item.items;
                             if (length > 0) return (
                                 <View style={{ flex: 1 }}>
                                     {(showCategories && !selectMode) && (
@@ -451,6 +458,7 @@ const HomeScreen = ({ isMenuOpen, setIsMenuOpen, navigation }) => {
                                             onPress={() => {
                                                 if (category === "Acontecendo agora") setShowPresent(!showPresent);
                                                 else if (category === "Acontecerá") setShowFuture(!showFuture);
+                                                else if (category === "Prazo") setShowLimite(!showLimite);
                                                 else setShowPast(!showPast);
                                             }}
                                             style={{
@@ -494,7 +502,7 @@ const HomeScreen = ({ isMenuOpen, setIsMenuOpen, navigation }) => {
                                         </TouchableOpacity>
                                     )}
                                     <FlatList
-                                        data={item.items}
+                                        data={sortedItems}
                                         renderItem={({ item }) => {
                                             if (!selectMode && !getShowItems() && showCategories) return;
                                             if (selectMode && item.category === "Holiday") return;
@@ -597,13 +605,14 @@ const HomeScreen = ({ isMenuOpen, setIsMenuOpen, navigation }) => {
                                                                 }}>
                                                                 <Image
                                                                     source={
-                                                                        item.category === "Academic" ? require("../assets/Academic.png") :
-                                                                            item.category === "Birthday" ? require("../assets/Birthday.png") :
-                                                                                item.category === "Business" ? require("../assets/Business.png") :
-                                                                                    item.category === "Holiday" ? require("../assets/Holiday.png") :
-                                                                                        item.category === "Medicine" ? require("../assets/Medicine.png") :
-                                                                                            item.category === "Relationship" ? require("../assets/Relationship.png") :
-                                                                                                require("../assets/Reminder.png")
+                                                                        item.category === "Photography" ? require("../assets/Photography.png") :
+                                                                            item.category === "Academic" ? require("../assets/Academic.png") :
+                                                                                item.category === "Birthday" ? require("../assets/Birthday.png") :
+                                                                                    item.category === "Business" ? require("../assets/Business.png") :
+                                                                                        item.category === "Holiday" ? require("../assets/Holiday.png") :
+                                                                                            item.category === "Medicine" ? require("../assets/Medicine.png") :
+                                                                                                item.category === "Relationship" ? require("../assets/Relationship.png") :
+                                                                                                    require("../assets/Reminder.png")
                                                                     }
                                                                     style={{
                                                                         margin: selectMode ? globals.app.width / 80 : globals.app.width / 86.2,
@@ -670,6 +679,38 @@ const HomeScreen = ({ isMenuOpen, setIsMenuOpen, navigation }) => {
                                                                     }}>
                                                                     {item.description.trim().length > 0 ? item.description : "Nenhuma descrição incluída."}
                                                                 </Text>
+                                                                {item.category == "Photography" && (
+                                                                    <View style={{ flexDirection: "row" }}>
+                                                                        <Text
+                                                                            numberOfLines={1}
+                                                                            style={{
+                                                                                fontSize: globals.app.width / 28,
+                                                                                color: "#2db3a8",
+                                                                                flex: 0
+                                                                            }}>
+                                                                            Prazo:
+                                                                        </Text>
+                                                                        <Text
+                                                                            numberOfLines={1}
+                                                                            style={{
+                                                                                marginHorizontal: globals.app.width / 60,
+                                                                                fontSize: globals.app.width / 28,
+                                                                                color: globals.colors.tint,
+                                                                                flex: 0
+                                                                            }}>
+                                                                            {formatDate(item.limiteDate, true)}
+                                                                        </Text>
+                                                                        <Text
+                                                                            numberOfLines={1}
+                                                                            style={{
+                                                                                color: globals.colors.placeholder,
+                                                                                fontSize: globals.app.width / 28,
+                                                                                flex: 1
+                                                                            }}>
+                                                                            [{globals.status.find(status => status.value === item.status)?.label || "Não definido"}]
+                                                                        </Text>
+                                                                    </View>
+                                                                )}
                                                             </View>
                                                         )}
                                                     </View>

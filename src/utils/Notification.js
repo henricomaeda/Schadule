@@ -65,7 +65,7 @@ const createNotificationChannel = channelId => {
             },
             created => {
                 if (created) console.log("The notification channel was successfully created!");
-                else console.warn("The notification channel has already been created!");
+                else console.log("The notification channel has already been created!");
             }
         );
     }

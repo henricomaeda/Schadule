@@ -180,12 +180,14 @@ const DataScreen = ({ navigation }) => {
                                         const address = isValid(item, "address");
                                         const startDate = isValid(item, "startDate") && !isNaN(new Date(item.startDate).getTime());
                                         const endDate = isValid(item, "endDate") && !isNaN(new Date(item.endDate).getTime());
+                                        const limiteDate = isValid(item, "limiteDate") && !isNaN(new Date(item.limiteDate).getTime());
                                         const annually = isValid(item, "annually") && typeof Boolean(item.annually) === "boolean";
                                         const allDay = isValid(item, "allDay") && typeof Boolean(item.allDay) === "boolean";
                                         const notify = isValid(item, "notify") && typeof Boolean(item.notify) === "boolean";
                                         const category = isValid(item, "category");
+                                        const status = isValid(item, "status");
                                         const description = isValid(item, "description");
-                                        if (id && name && address && startDate && endDate && annually && allDay && category && description && notify) {
+                                        if (id && name && address && startDate && endDate && limiteDate && annually && allDay && category && status && description && notify) {
                                             const datesEqual = new Date(item.startDate) <= new Date(item.endDate);
                                             const datesValid = new Date(item.startDate).getFullYear() === new Date(item.endDate).getFullYear();
                                             if (datesEqual && datesValid) return true;

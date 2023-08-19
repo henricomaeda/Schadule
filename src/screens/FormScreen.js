@@ -15,6 +15,7 @@ import {
     Image,
     View,
     Text,
+    Alert,
     TextInput,
     TouchableOpacity,
 } from "react-native";
@@ -25,10 +26,12 @@ const FormScreen = ({ navigation, route }) => {
     const [address, setAddress] = React.useState("");
     const [startDate, setStartDate] = React.useState(new Date());
     const [endDate, setEndDate] = React.useState(new Date());
+    const [limiteDate, setLimiteDate] = React.useState(new Date());
     const [annually, setAnnually] = React.useState(false);
     const [allDay, setAllDay] = React.useState(false);
     const [notify, setNotify] = React.useState(true);
     const [category, setCategory] = React.useState("Reminder");
+    const [currentStatus, setCurrentStatus] = React.useState("Undefined");
     const [description, setDescription] = React.useState("");
     const [required, setRequired] = React.useState(false);
     const [showTopButton, setShowTopButton] = React.useState(false);
@@ -46,10 +49,12 @@ const FormScreen = ({ navigation, route }) => {
                     setAddress(event.address);
                     setStartDate(new Date(event.startDate));
                     setEndDate(new Date(event.endDate));
+                    setLimiteDate(new Date(event.limiteDate));
                     setAnnually(Boolean(event.annually));
                     setAllDay(Boolean(event.allDay));
                     setNotify(Boolean(event.notify));
                     setCategory(event.category);
+                    setCurrentStatus(event.status);
                     setDescription(event.description);
                 }
             }
@@ -58,14 +63,21 @@ const FormScreen = ({ navigation, route }) => {
         fetchData();
     }, [id]);
 
-    // Define default variables to drop down picker.
+    // Define default variables to categories drop down picker.
     const [open, setOpen] = React.useState(false);
     const categories = globals.categories;
+
+    // Define default variables to status drop down picker.
+    const [statusOpen, setStatusOpened] = React.useState(false);
+    const status = globals.status;
 
     // Define default variables to date time picker.
     const [showDatePicker, setShowDatePicker] = React.useState(false);
     const [showStartTimePicker, setShowStartTimePicker] = React.useState(false);
     const [showEndTimePicker, setShowEndTimePicker] = React.useState(false);
+
+    // Define limite date default variables to date time picker.
+    const [showLimiteDatePicker, setShowLimiteDatePicker] = React.useState(false);
 
     // Define a function to update date.
     const handleDateChange = (date) => {
@@ -77,6 +89,16 @@ const FormScreen = ({ navigation, route }) => {
         setShowDatePicker(false);
         setStartDate(newStartDate);
         setEndDate(newEndDate);
+    };
+
+    // Define a function to update limite date.
+    const handleLimiteDateChange = (date) => {
+        const year = date.getFullYear();
+        const month = date.getMonth();
+        const day = date.getDate();
+        const newLimiteDate = new Date(year, month, day, 23, 59)
+        setShowLimiteDatePicker(false);
+        setLimiteDate(newLimiteDate);
     };
 
     // Define a function to update start and end time.
@@ -206,6 +228,7 @@ const FormScreen = ({ navigation, route }) => {
     const saveEvent = () => {
         startDate.setMilliseconds(0);
         endDate.setMilliseconds(0);
+        limiteDate.setMilliseconds(0);
         try {
             if (id === -1) events.push({
                 id: generateUniqueId(events),
@@ -213,10 +236,12 @@ const FormScreen = ({ navigation, route }) => {
                 address: address.trim(),
                 startDate: startDate,
                 endDate: endDate,
+                limiteDate: limiteDate,
                 annually: annually,
                 allDay: allDay,
                 notify: notify,
                 category: category.trim(),
+                status: currentStatus.trim(),
                 description: description.trim()
             });
             else {
@@ -225,10 +250,12 @@ const FormScreen = ({ navigation, route }) => {
                 events[eventIndex].address = address.trim();
                 events[eventIndex].startDate = startDate;
                 events[eventIndex].endDate = endDate;
+                events[eventIndex].limiteDate = limiteDate;
                 events[eventIndex].annually = annually;
                 events[eventIndex].allDay = allDay;
                 events[eventIndex].notify = notify;
                 events[eventIndex].category = category.trim();
+                events[eventIndex].status = currentStatus.trim();
                 events[eventIndex].description = description.trim();
             };
 
@@ -243,7 +270,7 @@ const FormScreen = ({ navigation, route }) => {
     // Create a function to remove space in start and end of a text value.
     const onBlurInput = setValue => setValue(previousValue => previousValue.trim());
     return (
-        <View style={{ flex: 1 }} onTouchEnd={open ? () => setOpen(false) : null}>
+        <View style={{ flex: 1 }} onTouchEnd={() => (setOpen(false), setStatusOpened(false))}>
             <ScrollView
                 ref={scrollViewRef}
                 onScroll={handleScroll}
@@ -275,6 +302,14 @@ const FormScreen = ({ navigation, route }) => {
                             value={endDate}
                             themeVariant="dark"
                             onChange={(event, date) => handleTimeChange(date, false)}
+                        />
+                    )}
+                    {showLimiteDatePicker && (
+                        <DateTimePicker
+                            mode="date"
+                            value={limiteDate}
+                            themeVariant="dark"
+                            onChange={(event, date) => handleLimiteDateChange(date)}
                         />
                     )}
                     <Text
@@ -309,12 +344,13 @@ const FormScreen = ({ navigation, route }) => {
                                 }}>
                                 <Image
                                     source={
-                                        category === "Academic" ? require("../assets/Academic.png") :
-                                            category === "Birthday" ? require("../assets/Birthday.png") :
-                                                category === "Business" ? require("../assets/Business.png") :
-                                                    category === "Medicine" ? require("../assets/Medicine.png") :
-                                                        category === "Relationship" ? require("../assets/Relationship.png") :
-                                                            require("../assets/Reminder.png")
+                                        category === "Photography" ? require("../assets/Photography.png") :
+                                            category === "Academic" ? require("../assets/Academic.png") :
+                                                category === "Birthday" ? require("../assets/Birthday.png") :
+                                                    category === "Business" ? require("../assets/Business.png") :
+                                                        category === "Medicine" ? require("../assets/Medicine.png") :
+                                                            category === "Relationship" ? require("../assets/Relationship.png") :
+                                                                require("../assets/Reminder.png")
                                     }
                                     style={{
                                         borderRadius: globals.app.circle,
@@ -352,7 +388,7 @@ const FormScreen = ({ navigation, route }) => {
                                         fontSize: globals.app.width / 28,
                                         color: globals.colors.placeholder
                                     }}>
-                                    {`${formatTime(startDate.getHours())}:${formatTime(startDate.getMinutes())} - ${formatTime(endDate.getHours())}:${formatTime(endDate.getMinutes())}`}
+                                    {`${formatTime(startDate.getHours())}:${formatTime(startDate.getMinutes())} até ${formatTime(endDate.getHours())}:${formatTime(endDate.getMinutes())}`}
                                 </Text>
                             </View>
                         </View>
@@ -380,6 +416,38 @@ const FormScreen = ({ navigation, route }) => {
                                 }}>
                                 {description.trim().length > 0 ? description.trim() : "Descrição do evento"}
                             </Text>
+                            {category == "Photography" && (
+                                <View style={{ flexDirection: "row" }}>
+                                    <Text
+                                        numberOfLines={1}
+                                        style={{
+                                            fontSize: globals.app.width / 28,
+                                            color: "#2db3a8",
+                                            flex: 0
+                                        }}>
+                                        Prazo:
+                                    </Text>
+                                    <Text
+                                        numberOfLines={1}
+                                        style={{
+                                            marginHorizontal: globals.app.width / 60,
+                                            fontSize: globals.app.width / 28,
+                                            color: globals.colors.tint,
+                                            flex: 0
+                                        }}>
+                                        {formatDate(limiteDate, true)}
+                                    </Text>
+                                    <Text
+                                        numberOfLines={1}
+                                        style={{
+                                            color: globals.colors.placeholder,
+                                            fontSize: globals.app.width / 28,
+                                            flex: 1
+                                        }}>
+                                        [{globals.status.find(item => item.value === currentStatus)?.label || "Não definido"}]
+                                    </Text>
+                                </View>
+                            )}
                         </View>
                     </View>
                     {CustomTextInput(name, setName, "Nome do evento", "Entre com o nome do evento", false, true)}
@@ -396,6 +464,7 @@ const FormScreen = ({ navigation, route }) => {
                             <TouchableOpacity
                                 onPress={() => {
                                     setOpen(false);
+                                    setStatusOpened(false);
                                     Keyboard.dismiss();
                                     setShowDatePicker(true);
                                 }}
@@ -419,6 +488,7 @@ const FormScreen = ({ navigation, route }) => {
                             <TouchableOpacity
                                 onPress={() => {
                                     setOpen(false);
+                                    setStatusOpened(false);
                                     Keyboard.dismiss();
                                     if (!allDay) setShowStartTimePicker(true);
                                 }}
@@ -435,6 +505,7 @@ const FormScreen = ({ navigation, route }) => {
                             <TouchableOpacity
                                 onPress={() => {
                                     setOpen(false);
+                                    setStatusOpened(false);
                                     Keyboard.dismiss();
                                     if (!allDay) setShowEndTimePicker(true);
                                 }}
@@ -489,7 +560,7 @@ const FormScreen = ({ navigation, route }) => {
                                 borderColor: globals.colors.midground,
                                 borderWidth: globals.app.width / 102,
                                 elevation: 6,
-                                zIndex: 2
+                                zIndex: 6000
                             }}
                             style={{
                                 backgroundColor: globals.colors.midground,
@@ -506,9 +577,72 @@ const FormScreen = ({ navigation, route }) => {
                             flexDirection: "row"
                         }]}>
                         {CustomTouchableOpacity("TRABALHO", "Business", "#2255A4")}
-                        {CustomTouchableOpacity("ACADÊMICO", "Academic", "#5822a4")}
+                        {CustomTouchableOpacity("FOTOGRAFIA", "Photography", "#5822a4")}
                         {CustomTouchableOpacity("MEDICINA", "Medicine", "#a4229e")}
                     </View>
+                    {category == "Photography" && (
+                        <View
+                            style={[styles.container, {
+                                justifyContent: "space-between",
+                                flexDirection: "row"
+                            }]}>
+                            <View style={{ flex: 1 }}>
+                                <Text style={styles.label}>
+                                    Status
+                                </Text>
+                                <DropDownPicker
+                                    open={statusOpen}
+                                    setOpen={() => {
+                                        Keyboard.dismiss();
+                                        setStatusOpened(previousValue => !previousValue);
+                                    }}
+                                    value={currentStatus}
+                                    setValue={setCurrentStatus}
+                                    items={status}
+                                    theme="DARK"
+                                    listMode="SCROLLVIEW"
+                                    textStyle={[styles.timeInput, { textAlign: "auto" }]}
+                                    dropDownContainerStyle={{
+                                        backgroundColor: globals.colors.background,
+                                        borderColor: globals.colors.midground,
+                                        borderWidth: globals.app.width / 102,
+                                        elevation: 6,
+                                        zIndex: 6000
+                                    }}
+                                    style={{
+                                        backgroundColor: globals.colors.midground,
+                                        borderRadius: globals.app.width / 42,
+                                        fontSize: globals.app.width / 26,
+                                        padding: globals.app.width / 42,
+                                        borderWidth: 0,
+                                    }}
+                                />
+                            </View>
+                            <View style={{ flex: 1, marginLeft: globals.app.width / 30 }}>
+                                <Text style={styles.label}>
+                                    Prazo de entrega
+                                </Text>
+                                <TouchableOpacity
+                                    onPress={() => {
+                                        setOpen(false);
+                                        setStatusOpened(false);
+                                        Keyboard.dismiss();
+                                        setShowLimiteDatePicker(true);
+                                    }}
+                                    style={{
+                                        backgroundColor: globals.colors.midground,
+                                        paddingHorizontal: globals.app.width / 42,
+                                        paddingVertical: globals.app.width / 26,
+                                        borderRadius: globals.app.width / 42,
+                                        fontSize: globals.app.width / 26
+                                    }}>
+                                    <Text style={styles.timeInput}>
+                                        {formatTime(limiteDate.getDate())}/{globals.months[limiteDate.getMonth()].toLowerCase()}/{limiteDate.getFullYear()}
+                                    </Text>
+                                </TouchableOpacity>
+                            </View>
+                        </View>
+                    )}
                     {CustomTextInput(description, setDescription, "Descrição do evento", "Entre com a descrição do evento", true)}
                 </View>
             </ScrollView>
